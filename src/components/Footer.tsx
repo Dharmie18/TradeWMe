@@ -3,10 +3,10 @@ import { TrendingUp } from 'lucide-react';
 
 export function Footer() {
   return (
-    <footer className="border-t bg-muted/40">
-      <div className="container py-8 md:py-12">
-        <div className="grid grid-cols-2 gap-6 md:grid-cols-4 md:gap-8">
-          <div className="col-span-2 md:col-span-1 space-y-4">
+    <footer className="border-t bg-muted/40 text-center">
+      <div className="container py-8 md:py-12 mx-auto">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-4 md:gap-8 justify-items-center">
+          <div className="col-span-1 md:col-span-1 space-y-4 flex flex-col items-center">
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
                 <TrendingUp className="h-5 w-5 text-primary-foreground" />
@@ -18,7 +18,7 @@ export function Footer() {
             </p>
           </div>
 
-          <div>
+          <div className="flex flex-col items-center w-full">
             <h3 className="mb-3 md:mb-4 text-sm font-semibold">Products</h3>
             <ul className="space-y-2 md:space-y-3">
               <li>
@@ -44,7 +44,7 @@ export function Footer() {
             </ul>
           </div>
 
-          <div>
+          <div className="flex flex-col items-center w-full">
             <h3 className="mb-3 md:mb-4 text-sm font-semibold">Resources</h3>
             <ul className="space-y-2 md:space-y-3">
               <li>
@@ -65,7 +65,7 @@ export function Footer() {
             </ul>
           </div>
 
-          <div>
+          <div className="flex flex-col items-center w-full">
             <h3 className="mb-3 md:mb-4 text-sm font-semibold">Legal</h3>
             <ul className="space-y-2 md:space-y-3">
               <li>

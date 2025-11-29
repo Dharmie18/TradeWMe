@@ -5,6 +5,7 @@ import ErrorReporter from "@/components/ErrorReporter";
 import Script from "next/script";
 import { Web3Provider } from "@/components/providers/Web3Provider";
 import { Toaster } from "@/components/ui/sonner";
+import { HomeReturn } from "@/components/HomeReturn";
 
 export const metadata: Metadata = {
   title: "PocketBroker - Non-Custodial Crypto Trading Platform",
@@ -33,6 +34,7 @@ export default function RootLayout({
 
         {/* ⭐ FIX: Wrap whole app in Web3Provider */}
         <Web3Provider>
+          <HomeReturn />
           {children}
         </Web3Provider>
 

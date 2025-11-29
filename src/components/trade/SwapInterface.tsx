@@ -8,11 +8,12 @@ import { Label } from '@/components/ui/label';
 import { ArrowDownUp, Settings2, Zap } from 'lucide-react';
 import { TokenSelector } from './TokenSelector';
 import { SlippageSettings } from './SlippageSettings';
-import { useAccount } from 'wagmi';
+import { useAccount, useBalance } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { type Address } from 'viem';
 
 export function SwapInterface() {
-  const { isConnected } = useAccount();
+  const { isConnected, address } = useAccount();
   const [tokenIn, setTokenIn] = useState({ symbol: 'ETH', address: '0xEth', logo: 'https://cryptologos.cc/logos/ethereum-eth-logo.png' });
   const [tokenOut, setTokenOut] = useState({ symbol: 'USDC', address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', logo: 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png' });
   const [amountIn, setAmountIn] = useState('');
@@ -20,6 +21,18 @@ export function SwapInterface() {
   const [slippage, setSlippage] = useState(0.5);
   const [showSettings, setShowSettings] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Fetch Balance for Token In
+  const { data: balanceIn } = useBalance({
+    address,
+    token: tokenIn.address === '0xEth' ? undefined : (tokenIn.address as Address),
+  });
+
+  // Fetch Balance for Token Out
+  const { data: balanceOut } = useBalance({
+    address,
+    token: tokenOut.address === '0xEth' ? undefined : (tokenOut.address as Address),
+  });
 
   const handleSwapTokens = () => {
     const temp = tokenIn;
@@ -31,7 +44,7 @@ export function SwapInterface() {
 
   const handleSwap = async () => {
     if (!isConnected) return;
-    
+
     setIsLoading(true);
     try {
       // Call swap API
@@ -45,7 +58,7 @@ export function SwapInterface() {
           slippage,
         }),
       });
-      
+
       const data = await response.json();
       console.log('Swap quote:', data);
       // Execute swap transaction here
@@ -94,8 +107,15 @@ export function SwapInterface() {
             />
           </div>
           <div className="flex justify-between text-xs md:text-sm text-muted-foreground">
-            <span>Balance: 1.234 {tokenIn.symbol}</span>
-            <Button variant="link" size="sm" className="h-auto p-0 text-xs md:text-sm">
+            <span>
+              Balance: {balanceIn ? `${parseFloat(balanceIn.formatted).toFixed(4)} ${balanceIn.symbol}` : '0.00'}
+            </span>
+            <Button
+              variant="link"
+              size="sm"
+              className="h-auto p-0 text-xs md:text-sm"
+              onClick={() => balanceIn && setAmountIn(balanceIn.formatted)}
+            >
               MAX
             </Button>
           </div>
@@ -132,7 +152,7 @@ export function SwapInterface() {
             />
           </div>
           <div className="text-xs md:text-sm text-muted-foreground">
-            Balance: 456.78 {tokenOut.symbol}
+            Balance: {balanceOut ? `${parseFloat(balanceOut.formatted).toFixed(4)} ${balanceOut.symbol}` : '0.00'}
           </div>
         </div>
 

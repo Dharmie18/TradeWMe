@@ -45,7 +45,7 @@ export function Header() {
         setIsAdmin(false);
       }
     };
-    
+
     checkAdminStatus();
   }, [session]);
 
@@ -58,7 +58,7 @@ export function Header() {
         },
       },
     });
-    
+
     if (error?.code) {
       toast.error(error.code);
     } else {
@@ -77,7 +77,7 @@ export function Header() {
   ];
 
   // Only show admin link if user is admin
-  const allNavLinks = isAdmin 
+  const allNavLinks = isAdmin
     ? [...navLinks, { href: '/admin', label: 'Admin', icon: Shield }]
     : navLinks;
 
@@ -91,7 +91,7 @@ export function Header() {
             </div>
             <span className="text-xl font-bold">PocketBroker</span>
           </Link>
-          
+
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
             {allNavLinks.map((link) => {
@@ -117,13 +117,14 @@ export function Header() {
               <span>Upgrade</span>
             </Button>
           </Link>
-          
+
+          {/* Always show ConnectButton */}
+          <div className="hidden sm:block">
+            <ConnectButton />
+          </div>
+
           {!isPending && session?.user ? (
             <>
-              <div className="hidden sm:block">
-                <ConnectButton />
-              </div>
-              
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm" className="gap-2">
@@ -170,7 +171,7 @@ export function Header() {
                   </Button>
                 </Link>
               </div>
-              
+
               {/* Mobile auth buttons */}
               <div className="sm:hidden flex items-center gap-2">
                 <Link href="/login">
@@ -213,7 +214,7 @@ export function Header() {
                   <Crown className="h-5 w-5" />
                   Premium
                 </Link>
-                
+
                 {session?.user && (
                   <>
                     <div className="border-t pt-4 mt-2">

@@ -48,7 +48,7 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  
+
   /* Custom Animation Durations */
   --animate-ticker: ticker 30s linear infinite;
   --animate-fade-in: fade-in 0.8s ease-out forwards;
@@ -112,23 +112,21 @@
   --chart-2: oklch(0.65 0.20 200);
   --chart-3: oklch(0.70 0.18 180);
   --chart-4: oklch(0.55 0.24 260);
-  --chart-5: oklch(0.60 0.21 280);
-  --sidebar: oklch(0.16 0.02 240);
-  --sidebar-foreground: oklch(0.95 0.01 240);
-  --sidebar-primary: oklch(0.65 0.20 220);
-  --sidebar-primary-foreground: oklch(0.12 0.02 240);
-  --sidebar-accent: oklch(0.22 0.03 240);
-    transform: translateX(0);
+}
+
+@keyframes ticker {
+  0% {
+    transform: translateX(100%);
   }
   100% {
-    transform: translateX(-50%);
+    transform: translateX(-100%);
   }
 }
 
 @keyframes fade-in {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;

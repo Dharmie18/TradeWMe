@@ -31,7 +31,7 @@ export default function LoginPage() {
         email: formData.email,
         password: formData.password,
         rememberMe: formData.rememberMe,
-        callbackURL: searchParams.get('redirect') || '/trade',
+        callbackURL: searchParams.get('redirect') || '/dashboard',
       });
 
       if (error?.code) {
@@ -41,7 +41,7 @@ export default function LoginPage() {
       }
 
       toast.success('Successfully logged in!');
-      const redirectUrl = searchParams.get('redirect') || '/trade';
+      const redirectUrl = searchParams.get('redirect') || '/dashboard';
       router.push(redirectUrl);
     } catch (error) {
       toast.error('Login failed. Please try again.');
@@ -99,7 +99,7 @@ export default function LoginPage() {
               <Checkbox
                 id="remember"
                 checked={formData.rememberMe}
-                onCheckedChange={(checked) => 
+                onCheckedChange={(checked) =>
                   setFormData({ ...formData, rememberMe: checked as boolean })
                 }
                 disabled={isLoading}

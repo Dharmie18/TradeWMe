@@ -12,6 +12,9 @@ import { ProfileCard } from '@/components/dashboard/ProfileCard';
 import { RecentActivity } from '@/components/dashboard/RecentActivity';
 import { SavedItems } from '@/components/dashboard/SavedItems';
 import { PersonalStats } from '@/components/dashboard/PersonalStats';
+import { UserProfileHeader } from '@/components/dashboard/UserProfileHeader';
+import { FinancialStats } from '@/components/dashboard/FinancialStats';
+import { MarketTicker } from '@/components/dashboard/MarketTicker';
 
 /**
  * UserDashboard component provides a personalized dashboard for logged-in users
@@ -46,26 +49,28 @@ export default function UserDashboard() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-gradient-to-b from-background via-blue-950/5 to-background">
       <Header />
-      <main className="flex-1 bg-muted/30">
-        <div className="container mx-auto px-4 md:px-6 py-8">
-          {/* Header Section */}
-          <div className="mb-8 animate-slide-up">
-            <h1 className="text-3xl md:text-4xl font-bold animate-fade-in">Dashboard</h1>
-            <p className="text-muted-foreground mt-2 animate-slide-in-left">
-              Welcome back, {session.user.name || 'User'}! Here's your personalized overview.
-            </p>
+      <main className="flex-1">
+        <div className="container mx-auto px-4 md:px-6 py-8 space-y-6">
+          {/* User Profile Header */}
+          <div className="animate-fade-in">
+            <UserProfileHeader />
           </div>
 
-          {/* Personal Stats Overview */}
-          <div className="mb-8">
-            <PersonalStats />
+          {/* Financial Stats Cards */}
+          <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
+            <FinancialStats />
+          </div>
+
+          {/* Market Ticker */}
+          <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
+            <MarketTicker />
           </div>
 
           {/* Main Content Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+            <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 bg-card/50 backdrop-blur-sm">
               <TabsTrigger value="overview" className="flex items-center gap-2">
                 <BarChart3 className="h-4 w-4" />
                 Overview
@@ -122,3 +127,4 @@ export default function UserDashboard() {
     </div>
   );
 }
+

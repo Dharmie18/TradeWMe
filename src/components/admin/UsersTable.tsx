@@ -19,9 +19,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Search, Loader2, ChevronLeft, ChevronRight, Crown } from 'lucide-react';
+import { Search, Loader2, ChevronLeft, ChevronRight, Crown, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import Link from 'next/link';
 
 interface User {
   id: string;
@@ -176,13 +177,13 @@ export function UsersTable() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8">
+                <TableCell colSpan={8} className="text-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                 </TableCell>
               </TableRow>
             ) : users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                   No users found
                 </TableCell>
               </TableRow>
@@ -206,6 +207,14 @@ export function UsersTable() {
                   <TableCell>${user.totalVolume.toFixed(2)}</TableCell>
                   <TableCell className="text-xs">
                     {format(new Date(user.createdAt), 'MMM dd, yyyy')}
+                  </TableCell>
+                  <TableCell>
+                    <Button asChild variant="outline" size="sm">
+                      <Link href={`/admin/users/${user.id}`}>
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Details
+                      </Link>
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))

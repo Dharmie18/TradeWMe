@@ -58,19 +58,19 @@ export default function Home() {
         </section>
 
         {/* Stats Counter Section */}
-        <section className="w-full border-y bg-muted/40 py-12 md:py-16">
-          <div className="container mx-auto px-4 md:px-6">
+        <section className="w-full border-y bg-muted/40 py-12 md:py-16 animate-fade-in">
+          <div className="container mx-auto px-4 md:px-6 animate-scale-in">
             <StatsCounter />
           </div>
         </section>
 
         {/* Features Section */}
-        <section className="w-full py-12 md:py-20 lg:py-24">
+        <section className="w-full py-12 md:py-20 lg:py-24 animate-fade-in">
           <div className="container mx-auto px-4 md:px-6">
             <div className="max-w-6xl mx-auto">
               <div className="grid gap-6 md:gap-8 md:grid-cols-3">
-                <div className="group flex flex-col items-center text-center p-6 md:p-8 rounded-xl hover:bg-muted/50 transition-all duration-300 cursor-pointer hover:scale-105">
-                  <div className="flex h-14 w-14 md:h-16 md:w-16 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-cyan-500 text-primary-foreground group-hover:scale-110 transition-transform">
+                <div className="group flex flex-col items-center text-center p-6 md:p-8 rounded-xl hover:bg-muted/50 transition-all duration-300 cursor-pointer hover:scale-105 hover:animate-hover-lift animate-slide-in-left">
+                  <div className="flex h-14 w-14 md:h-16 md:w-16 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-cyan-500 text-primary-foreground group-hover:scale-110 transition-transform animate-float">
                     <Lock className="h-7 w-7 md:h-8 md:w-8" />
                   </div>
                   <h3 className="mt-4 md:mt-6 text-xl md:text-2xl font-semibold">Non-Custodial</h3>
@@ -78,8 +78,8 @@ export default function Home() {
                     You control your funds. We never have access to your assets.
                   </p>
                 </div>
-                <div className="group flex flex-col items-center text-center p-6 md:p-8 rounded-xl hover:bg-muted/50 transition-all duration-300 cursor-pointer hover:scale-105">
-                  <div className="flex h-14 w-14 md:h-16 md:w-16 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500 to-blue-400 text-primary-foreground group-hover:scale-110 transition-transform">
+                <div className="group flex flex-col items-center text-center p-6 md:p-8 rounded-xl hover:bg-muted/50 transition-all duration-300 cursor-pointer hover:scale-105 hover:animate-hover-lift animate-slide-in-left" style={{ animationDelay: '0.2s' }}>
+                  <div className="flex h-14 w-14 md:h-16 md:w-16 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500 to-blue-400 text-primary-foreground group-hover:scale-110 transition-transform animate-float" style={{ animationDelay: '0.2s' }}>
                     <Zap className="h-7 w-7 md:h-8 md:w-8" />
                   </div>
                   <h3 className="mt-4 md:mt-6 text-xl md:text-2xl font-semibold">Best Rates</h3>
@@ -87,8 +87,8 @@ export default function Home() {
                     Aggregate liquidity from multiple DEXs for optimal pricing.
                   </p>
                 </div>
-                <div className="group flex flex-col items-center text-center p-6 md:p-8 rounded-xl hover:bg-muted/50 transition-all duration-300 cursor-pointer hover:scale-105">
-                  <div className="flex h-14 w-14 md:h-16 md:w-16 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 text-primary-foreground group-hover:scale-110 transition-transform">
+                <div className="group flex flex-col items-center text-center p-6 md:p-8 rounded-xl hover:bg-muted/50 transition-all duration-300 cursor-pointer hover:scale-105 hover:animate-hover-lift animate-slide-in-left" style={{ animationDelay: '0.4s' }}>
+                  <div className="flex h-14 w-14 md:h-16 md:w-16 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 text-primary-foreground group-hover:scale-110 transition-transform animate-float" style={{ animationDelay: '0.4s' }}>
                     <Shield className="h-7 w-7 md:h-8 md:w-8" />
                   </div>
                   <h3 className="mt-4 md:mt-6 text-xl md:text-2xl font-semibold">Secure & Audited</h3>
@@ -102,46 +102,52 @@ export default function Home() {
         </section>
 
         {/* Market Overview Section */}
-        <section className="w-full py-12 md:py-20 lg:py-24">
+        <section className="w-full py-12 md:py-20 lg:py-24 animate-fade-in">
           <div className="container mx-auto px-4 md:px-6">
             <div className="max-w-7xl mx-auto">
-              <div className="mb-6 md:mb-8 text-center">
+              <div className="mb-6 md:mb-8 text-center animate-slide-up">
                 <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold">Market Overview</h2>
-                <p className="mt-2 md:mt-3 text-sm md:text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto">
+                <p className="mt-2 md:mt-3 text-sm md:text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto animate-slide-in-left">
                   Real-time insights into the crypto market
                 </p>
               </div>
-              <MarketOverview />
+              <div className="animate-scale-in">
+                <MarketOverview />
+              </div>
             </div>
           </div>
         </section>
 
         {/* Top Movers Section */}
-        <section className="w-full py-12 md:py-20 lg:py-24 bg-muted/30">
+        <section className="w-full py-12 md:py-20 lg:py-24 bg-muted/30 animate-stagger-fade">
           <div className="container mx-auto px-4 md:px-6">
             <div className="max-w-7xl mx-auto">
-              <div className="mb-6 md:mb-8 text-center">
+              <div className="mb-6 md:mb-8 text-center animate-slide-up">
                 <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold">Top Movers</h2>
-                <p className="mt-2 md:mt-3 text-sm md:text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto">
+                <p className="mt-2 md:mt-3 text-sm md:text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto animate-slide-in-right">
                   Track the biggest gainers and losers in the market
                 </p>
               </div>
-              <TopMovers />
+              <div className="animate-bounce-in">
+                <TopMovers />
+              </div>
             </div>
           </div>
         </section>
 
         {/* Trending Tokens Section */}
-        <section className="w-full py-12 md:py-20 lg:py-24">
+        <section className="w-full py-12 md:py-20 lg:py-24 animate-fade-in">
           <div className="container mx-auto px-4 md:px-6">
             <div className="max-w-7xl mx-auto">
-              <div className="mb-6 md:mb-8 text-center">
+              <div className="mb-6 md:mb-8 text-center animate-slide-up">
                 <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold">Trending Now</h2>
-                <p className="mt-2 md:mt-3 text-sm md:text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto">
+                <p className="mt-2 md:mt-3 text-sm md:text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto animate-slide-in-left">
                   Most popular tokens across the ecosystem
                 </p>
               </div>
-              <TrendingTokens />
+              <div className="animate-scale-in">
+                <TrendingTokens />
+              </div>
             </div>
           </div>
         </section>

@@ -82,25 +82,26 @@ export function Header() {
     : navLinks;
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 animate-fade-in">
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary animate-float group-hover:animate-bounce-in">
               <TrendingUp className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold">PocketBroker</span>
+            <span className="text-xl font-bold group-hover:animate-pulse-glow">PocketBroker</span>
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
-            {allNavLinks.map((link) => {
+            {allNavLinks.map((link, index) => {
               const Icon = link.icon;
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-sm font-medium transition-colors hover:text-primary flex items-center gap-1"
+                  className="text-sm font-medium transition-all duration-300 hover:text-primary hover:scale-105 hover:animate-hover-lift flex items-center gap-1"
+                  style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   {Icon && <Icon className="h-4 w-4" />}
                   {link.label}

@@ -1,100 +1,189 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Activity, TrendingUp, TrendingDown } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ArrowDownLeft, ArrowUpRight, RefreshCw, Loader2, Info, ExternalLink } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { format } from 'date-fns';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
-interface ActivityItem {
-    id: string;
+interface Transaction {
+    id: number;
+    txHash: string;
     type: string;
-    action: string;
-    amount: number;
-    timestamp: Date;
-    status: 'success' | 'pending' | 'failed';
+    tokenIn: string | null;
+    tokenOut: string | null;
+    amountIn: number | null;
+    amountOut: number | null;
+    status: string;
+    timestamp: string;
 }
 
-/**
- * RecentActivity component displays recent user trading/financial activities
- * Shows transaction history with amounts and status
- */
 export function RecentActivity() {
-    // Mock data - in production, fetch from API
-    const activities: ActivityItem[] = [
-        {
-            id: '1',
-            type: 'deposit',
-            action: 'Deposited funds',
-            amount: 5000,
-            timestamp: new Date(Date.now() - 3600000),
-            status: 'success',
-        },
-        {
-            id: '2',
-            type: 'trade',
-            action: 'Buy BTC',
-            amount: -2000,
-            timestamp: new Date(Date.now() - 7200000),
-            status: 'success',
-        },
-        {
-            id: '3',
-            type: 'profit',
-            action: 'Trading profit',
-            amount: 1500,
-            timestamp: new Date(Date.now() - 14400000),
-            status: 'success',
-        },
-    ];
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    const getTimeAgo = (date: Date) => {
-        const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-        const minutes = Math.floor(seconds / 60);
-        const hours = Math.floor(minutes / 60);
-        const days = Math.floor(hours / 24);
+    useEffect(() => {
+        const fetchTransactions = async () => {
+            try {
+                const token = localStorage.getItem('bearer_token');
+                const response = await fetch('/api/transactions?limit=5', {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
 
-        if (days > 0) return `${days}d ago`;
-        if (hours > 0) return `${hours}h ago`;
-        if (minutes > 0) return `${minutes}m ago`;
-        return 'Just now';
+                if (!response.ok) {
+                    throw new Error('Failed to fetch transactions');
+                }
+
+                const data = await response.json();
+                setTransactions(data.transactions || []);
+            } catch (err) {
+                setError(err instanceof Error ? err.message : 'Failed to load activity');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchTransactions();
+    }, []);
+
+    const getIcon = (type: string) => {
+        switch (type) {
+            case 'swap':
+                return <RefreshCw className="h-4 w-4" />;
+            case 'receive':
+                return <ArrowDownLeft className="h-4 w-4 text-green-500" />;
+            case 'send':
+                return <ArrowUpRight className="h-4 w-4 text-red-500" />;
+            default:
+                return <RefreshCw className="h-4 w-4" />;
+        }
     };
+
+    const getDescription = (tx: Transaction) => {
+        switch (tx.type) {
+            case 'swap':
+                return `Swapped ${tx.tokenIn || 'N/A'} to ${tx.tokenOut || 'N/A'}`;
+            case 'receive':
+                return `Received ${tx.tokenOut || 'N/A'}`;
+            case 'send':
+                return `Sent ${tx.tokenIn || 'N/A'}`;
+            default:
+                return 'Transaction';
+        }
+    };
+
+    const getStatusBadge = (status: string) => {
+        const variants: Record<string, 'default' | 'secondary' | 'destructive'> = {
+            confirmed: 'default',
+            pending: 'secondary',
+            failed: 'destructive',
+        };
+        return (
+            <Badge variant={variants[status] || 'secondary'} className="capitalize">
+                {status}
+            </Badge>
+        );
+    };
+
+    if (loading) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle>Recent Activity</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex flex-col items-center justify-center py-12">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+                        <p className="text-sm text-muted-foreground">Loading activity...</p>
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
+
+    if (error) {
+        return (
+            <Card className="border-destructive">
+                <CardHeader>
+                    <CardTitle>Recent Activity</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-sm text-destructive">{error}</p>
+                </CardContent>
+            </Card>
+        );
+    }
+
+    if (transactions.length === 0) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle>Recent Activity</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <Info className="h-12 w-12 text-muted-foreground mb-4" />
+                        <h3 className="text-lg font-semibold mb-2">No Activity Yet</h3>
+                        <p className="text-sm text-muted-foreground max-w-md mb-4">
+                            Start trading to see your recent activity here!
+                        </p>
+                        <Link href="/trade">
+                            <Button>Start Trading</Button>
+                        </Link>
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
 
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <Activity className="h-5 w-5" />
-                    Recent Activity
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                    <CardTitle>Recent Activity</CardTitle>
+                    <Link href="/portfolio">
+                        <Button variant="ghost" size="sm">
+                            View All
+                        </Button>
+                    </Link>
+                </div>
             </CardHeader>
             <CardContent>
-                <div className="space-y-4">
-                    {activities.map((activity) => (
+                <div className="space-y-3">
+                    {transactions.map((tx) => (
                         <div
-                            key={activity.id}
-                            className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors"
+                            key={tx.id}
+                            className="flex items-center justify-between p-3 rounded-lg border hover:border-primary/50 hover:bg-muted/50 transition-all"
                         >
-                            <div className="flex items-center gap-3">
-                                <div className={`p-2 rounded-full ${activity.amount > 0
-                                        ? 'bg-emerald-500/10 text-emerald-500'
-                                        : 'bg-blue-500/10 text-blue-500'
-                                    }`}>
-                                    {activity.amount > 0 ? (
-                                        <TrendingUp className="h-4 w-4" />
-                                    ) : (
-                                        <TrendingDown className="h-4 w-4" />
-                                    )}
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted shrink-0">
+                                    {getIcon(tx.type)}
                                 </div>
-                                <div>
-                                    <p className="font-medium">{activity.action}</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {getTimeAgo(activity.timestamp)}
-                                    </p>
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-medium text-sm truncate">{getDescription(tx)}</p>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <p className="text-xs text-muted-foreground">
+                                            {format(new Date(tx.timestamp), 'MMM dd, HH:mm')}
+                                        </p>
+                                        <a
+                                            href={`https://etherscan.io/tx/${tx.txHash}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-xs text-primary hover:underline flex items-center gap-1 font-mono"
+                                        >
+                                            {tx.txHash.slice(0, 6)}...{tx.txHash.slice(-4)}
+                                            <ExternalLink className="h-3 w-3" />
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
-                            <div className={`font-semibold ${activity.amount > 0
-                                    ? 'text-emerald-500'
-                                    : 'text-foreground'
-                                }`}>
-                                {activity.amount > 0 ? '+' : ''}${Math.abs(activity.amount).toLocaleString()}
+                            <div className="ml-2">
+                                {getStatusBadge(tx.status)}
                             </div>
                         </div>
                     ))}

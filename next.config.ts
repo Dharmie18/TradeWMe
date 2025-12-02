@@ -17,7 +17,7 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  serverComponentsExternalPackages: [
+  serverExternalPackages: [
     'pino',
     'thread-stream',
     'pino-pretty',

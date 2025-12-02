@@ -82,26 +82,32 @@ export function Header() {
     : navLinks;
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 animate-fade-in">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary animate-float group-hover:animate-bounce-in">
-              <TrendingUp className="h-5 w-5 text-primary-foreground" />
+          <Link
+            href="/"
+            className="flex items-center gap-2 group relative transition-all duration-300 hover:scale-110 animate-on-hover"
+          >
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary transition-all duration-300 group-hover:shadow-lg group-hover:shadow-primary/50 group-hover:rotate-6">
+              <TrendingUp className="h-5 w-5 text-primary-foreground transition-transform duration-300 group-hover:scale-110" />
             </div>
-            <span className="text-xl font-bold group-hover:animate-pulse-glow">PocketBroker</span>
+            <span className="text-xl font-bold transition-all duration-300 group-hover:text-primary group-hover:translate-x-1">
+              PocketBroker
+            </span>
+            {/* Glowing effect */}
+            <div className="absolute inset-0 rounded-lg bg-primary/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10" />
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
-            {allNavLinks.map((link, index) => {
+            {allNavLinks.map((link) => {
               const Icon = link.icon;
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-sm font-medium transition-all duration-300 hover:text-primary hover:scale-105 hover:animate-hover-lift flex items-center gap-1"
-                  style={{ animationDelay: `${index * 0.1}s` }}
+                  className="text-sm font-medium transition-colors hover:text-primary flex items-center gap-1"
                 >
                   {Icon && <Icon className="h-4 w-4" />}
                   {link.label}
@@ -112,6 +118,7 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-2 md:gap-4">
+          {/* Premium Upgrade Button */}
           <Link href="/premium" className="hidden sm:block">
             <Button variant="outline" size="sm" className="gap-2">
               <Crown className="h-4 w-4" />
@@ -119,45 +126,47 @@ export function Header() {
             </Button>
           </Link>
 
-          {/* Always show ConnectButton */}
+          {/* Wallet Connect Button - Always visible */}
           <div className="hidden sm:block">
             <ConnectButton />
           </div>
 
+          {/* Auth UI */}
           {!isPending && session?.user ? (
-            <>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <User className="h-4 w-4" />
-                    <span className="hidden md:inline">{session.user.name}</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <User className="h-4 w-4" />
+                  <span className="hidden md:inline">{session.user.name}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard">Dashboard</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/portfolio">Portfolio</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/tools">Tools</Link>
+                </DropdownMenuItem>
+                {isAdmin && (
                   <DropdownMenuItem asChild>
-                    <Link href="/portfolio">Portfolio</Link>
+                    <Link href="/admin" className="flex items-center gap-2">
+                      <Shield className="h-4 w-4" />
+                      Admin Dashboard
+                    </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/tools">Tools</Link>
-                  </DropdownMenuItem>
-                  {isAdmin && (
-                    <DropdownMenuItem asChild>
-                      <Link href="/admin" className="flex items-center gap-2">
-                        <Shield className="h-4 w-4" />
-                        Admin Dashboard
-                      </Link>
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Sign out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <>
               <div className="hidden sm:flex items-center gap-2">
@@ -193,6 +202,11 @@ export function Header() {
             </SheetTrigger>
             <SheetContent side="right" className="w-[300px] sm:w-[400px]">
               <nav className="flex flex-col gap-4 mt-8">
+                {/* Mobile Wallet Connect */}
+                <div className="pb-4 border-b">
+                  <ConnectButton />
+                </div>
+
                 {allNavLinks.map((link) => {
                   const Icon = link.icon;
                   return (

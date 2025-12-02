@@ -1,3 +1,8 @@
+/* Updated: 2025-11-29T20:45:49.863Z */
+/* Updated: 2025-11-29T19:52:08.528Z */
+/* Updated: 2025-11-29T18:54:24.415Z */
+/* Updated: 2025-11-29T18:32:17.296Z */
+/* Updated: 2025-11-22T07:40:34.130Z */
 /* Updated: 2025-11-21T22:37:58.913Z */
 /* Updated: 2025-11-21T22:22:11.055Z */
 /* Updated: 2025-11-21T21:49:50.869Z */
@@ -7,6 +12,7 @@
 /* Updated: 2025-11-20T22:56:31.274Z */
 /* Updated: 2025-11-20T22:48:58.172Z */
 @import "tailwindcss";
+@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -52,18 +58,8 @@
   /* Custom Animation Durations */
   --animate-ticker: ticker 30s linear infinite;
   --animate-fade-in: fade-in 0.8s ease-out forwards;
-  --animate-slide-up: slide-up 0.6s ease-out forwards;
-  --animate-slide-in-left: slide-in-left 0.7s ease-out forwards;
-  --animate-slide-in-right: slide-in-right 0.7s ease-out forwards;
-  --animate-bounce-in: bounce-in 0.8s ease-out forwards;
-  --animate-scale-in: scale-in 0.5s ease-out forwards;
-  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
-  --animate-float: float 3s ease-in-out infinite;
-  --animate-rotate-slow: rotate-slow 20s linear infinite;
-  --animate-gradient-shift: gradient-shift 3s ease-in-out infinite;
-  --animate-stagger-fade: stagger-fade 0.5s ease-out forwards;
-  --animate-hover-lift: hover-lift 0.3s ease-out forwards;
-  --animate-shimmer: shimmer 2s linear infinite;
+  --animate-gradient: gradient 3s linear infinite;
+  --animate-bounce-subtle: bounce-subtle 0.6s ease-in-out;
 }
 
 :root {
@@ -124,155 +120,79 @@
   --chart-2: oklch(0.65 0.20 200);
   --chart-3: oklch(0.70 0.18 180);
   --chart-4: oklch(0.55 0.24 260);
+  --chart-5: oklch(0.60 0.21 280);
+  --sidebar: oklch(0.16 0.02 240);
+  --sidebar-foreground: oklch(0.95 0.01 240);
+  --sidebar-primary: oklch(0.65 0.20 220);
+  --sidebar-primary-foreground: oklch(0.12 0.02 240);
+  --sidebar-accent: oklch(0.22 0.03 240);
+  --sidebar-accent-foreground: oklch(0.95 0.01 240);
+  --sidebar-border: oklch(0.25 0.02 240);
+  --sidebar-ring: oklch(0.65 0.20 220);
 }
 
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom Animations */
 @keyframes ticker {
   0% {
-    transform: translateX(100%);
+    transform: translateX(0);
   }
+
   100% {
-    transform: translateX(-100%);
+    transform: translateX(-50%);
   }
 }
 
 @keyframes fade-in {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-@keyframes slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+@keyframes gradient {
 
-@keyframes slide-in-left {
-  from {
-    opacity: 0;
-    transform: translateX(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes slide-in-right {
-  from {
-    opacity: 0;
-    transform: translateX(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes bounce-in {
-  0% {
-    opacity: 0;
-    transform: scale(0.3);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.05);
-  }
-  70% {
-    transform: scale(0.9);
-  }
+  0%,
   100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes scale-in {
-  from {
-    opacity: 0;
-    transform: scale(0.8);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
-  }
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-@keyframes rotate-slow {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes gradient-shift {
-  0% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
   }
-  100% {
-    background-position: 0% 50%;
-  }
 }
 
-@keyframes stagger-fade {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
+@keyframes bounce-subtle {
+
+  0%,
+  100% {
     transform: translateY(0);
   }
-}
 
-@keyframes hover-lift {
-  from {
+  25% {
+    transform: translateY(-4px);
+  }
+
+  50% {
     transform: translateY(0);
   }
-  to {
-    transform: translateY(-5px);
-  }
-}
 
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
+  75% {
+    transform: translateY(-2px);
   }
 }
 
@@ -283,6 +203,14 @@
 .animate-fade-in {
   animation: var(--animate-fade-in);
   opacity: 0;
+}
+
+.animate-gradient {
+  animation: var(--animate-gradient);
+}
+
+.animate-on-hover:hover {
+  animation: bounce-subtle 0.6s ease-in-out;
 }
 
 /* Hide Next.js error overlay portal */

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import VisualEditsMessenger from "../visual-edits/VisualEditsMessenger";
+
 import ErrorReporter from "@/components/ErrorReporter";
 import Script from "next/script";
 import { Web3Provider } from "@/components/providers/Web3Provider";
@@ -14,13 +14,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <html lang="en">
       <body className="antialiased">
-
+        <ErrorReporter />
         <Script
           src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/scripts//route-messenger.js"
           strategy="afterInteractive"
@@ -31,14 +31,12 @@ export default function RootLayout({
           data-debug="true"
           data-custom-data='{"appName": "YourApp", "version": "1.0.0", "greeting": "hi"}'
         />
-
-        {/* ⭐ FIX: Wrap whole app in Web3Provider */}
         <Web3Provider>
-          <HomeReturn />
           {children}
         </Web3Provider>
-
+        <HomeReturn />
         <Toaster />
+
       </body>
     </html>
   );

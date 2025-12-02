@@ -1,16 +1,13 @@
 'use client';
 
-import { useSession } from '@/lib/auth-client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { User, Mail, Calendar, Crown } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { User, Mail, Calendar, Crown, Edit, Wallet } from 'lucide-react';
+import { useSession } from '@/lib/auth-client';
+import Link from 'next/link';
 import { format } from 'date-fns';
 
-/**
- * ProfileCard component displays user profile information
- * Shows user details like name, email, join date, and premium status
- */
 export function ProfileCard() {
   const { data: session } = useSession();
 
@@ -19,71 +16,85 @@ export function ProfileCard() {
   }
 
   const user = session.user;
-  const initials = user.name
-    ? user.name.split(' ').map(n => n[0]).join('').toUpperCase()
-    : user.email.slice(0, 2).toUpperCase();
+  const isPremium = user.role === 'premium' || user.role === 'admin';
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <User className="h-5 w-5" />
-          Profile Information
-        </CardTitle>
-        <CardDescription>
-          Your account details and preferences
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <CardTitle>Profile Information</CardTitle>
+          <Button variant="outline" size="sm" className="gap-2">
+            <Edit className="h-4 w-4" />
+            Edit
+          </Button>
+        </div>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Avatar className="h-16 w-16">
-            <AvatarImage src={user.image || ''} alt={user.name || 'User'} />
-            <AvatarFallback>{initials}</AvatarFallback>
-          </Avatar>
-          <div className="space-y-1">
-            <h3 className="text-lg font-semibold">{user.name || 'Anonymous User'}</h3>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Mail className="h-4 w-4" />
-              {user.email}
+      <CardContent>
+        <div className="space-y-6">
+          {/* Profile Avatar & Name */}
+          <div className="flex items-center gap-4">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-cyan-500 text-white text-2xl font-bold">
+              {user.name?.charAt(0).toUpperCase() || 'U'}
             </div>
-            <div className="flex items-center gap-2">
-              <Badge variant={user.role === 'admin' ? 'destructive' : 'secondary'}>
-                {user.role === 'admin' ? 'Admin' : 'User'}
-              </Badge>
-              <Badge variant="outline" className="flex items-center gap-1">
-                <Crown className="h-3 w-3" />
-                Free Tier
-              </Badge>
+            <div className="flex-1">
+              <h3 className="text-2xl font-bold">{user.name}</h3>
+              {isPremium && (
+                <Badge className="gap-1 mt-2 bg-gradient-to-r from-yellow-500 to-orange-500">
+                  <Crown className="h-3 w-3" />
+                  Premium Member
+                </Badge>
+              )}
             </div>
           </div>
-        </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span className="font-medium">Member since:</span>
+          {/* User Details */}
+          <div className="space-y-3 pt-4 border-t">
+            <div className="flex items-center gap-3 text-sm">
+              <Mail className="h-4 w-4 text-muted-foreground" />
+              <span className="text-muted-foreground">Email:</span>
+              <span className="font-medium">{user.email}</span>
             </div>
-            <p className="text-sm text-muted-foreground">
-              {user.createdAt ? format(new Date(user.createdAt), 'MMMM dd, yyyy') : 'Unknown'}
-            </p>
-          </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm">
+            <div className="flex items-center gap-3 text-sm">
               <User className="h-4 w-4 text-muted-foreground" />
-              <span className="font-medium">Account type:</span>
+              <span className="text-muted-foreground">User ID:</span>
+              <span className="font-mono font-medium">{user.id}</span>
             </div>
-            <p className="text-sm text-muted-foreground capitalize">
-              {user.role || 'User'}
-            </p>
-          </div>
-        </div>
 
-        <div className="pt-4 border-t">
-          <p className="text-sm text-muted-foreground">
-            To upgrade to premium or manage your account settings, visit the premium page.
-          </p>
+            <div className="flex items-center gap-3 text-sm">
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <span className="text-muted-foreground">Member since:</span>
+              <span className="font-medium">
+                {user.createdAt ? format(new Date(user.createdAt), 'MMM dd, yyyy') : 'N/A'}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3 text-sm">
+              <Wallet className="h-4 w-4 text-muted-foreground" />
+              <span className="text-muted-foreground">Role:</span>
+              <Badge variant="secondary" className="capitalize">
+                {user.role || 'user'}
+              </Badge>
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="pt-4 border-t space-y-2">
+            <Link href="/portfolio" className="block">
+              <Button variant="outline" className="w-full justify-start gap-2">
+                <Wallet className="h-4 w-4" />
+                View Portfolio
+              </Button>
+            </Link>
+            {!isPremium && (
+              <Link href="/premium" className="block">
+                <Button className="w-full justify-start gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600">
+                  <Crown className="h-4 w-4" />
+                  Upgrade to Premium
+                </Button>
+              </Link>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>

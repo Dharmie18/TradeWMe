@@ -1,230 +1,192 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useSession } from '@/lib/auth-client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Heart, Bell, Plus, Loader2, TrendingUp, TrendingDown } from 'lucide-react';
-import { format } from 'date-fns';
-import { toast } from 'sonner';
+import { Star, Bell, TrendingUp, Loader2, Plus, Info } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 interface Watchlist {
   id: number;
   name: string;
-  tokens: Array<{
-    symbol: string;
-    address: string;
-    price?: number;
-    change24h?: number;
-  }>;
+  tokens: string[];
   createdAt: string;
 }
 
 interface PriceAlert {
   id: number;
   tokenSymbol: string;
-  tokenAddress: string;
   condition: string;
   targetPrice: number;
-  currentPrice?: number;
   triggered: boolean;
   createdAt: string;
 }
 
-/**
- * SavedItems component displays user's watchlists and price alerts
- * Organized in tabs for easy navigation
- */
 export function SavedItems() {
-  const { data: session } = useSession();
   const [watchlists, setWatchlists] = useState<Watchlist[]>([]);
   const [alerts, setAlerts] = useState<PriceAlert[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const fetchSavedItems = async () => {
-    if (!session?.user) return;
-
-    try {
-      const token = localStorage.getItem('bearer_token');
-
-      // Fetch watchlists
-      const watchlistsResponse = await fetch('/api/watchlists', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      // Fetch price alerts
-      const alertsResponse = await fetch('/api/price-alerts', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (watchlistsResponse.ok) {
-        const watchlistsData = await watchlistsResponse.json();
-        setWatchlists(watchlistsData.watchlists || []);
-      }
-
-      if (alertsResponse.ok) {
-        const alertsData = await alertsResponse.json();
-        setAlerts(alertsData.alerts || []);
-      }
-    } catch (error) {
-      console.error('Error fetching saved items:', error);
-      toast.error('Failed to load saved items');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (session?.user) {
-      fetchSavedItems();
-    }
-  }, [session]);
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem('bearer_token');
+
+        const [watchlistsRes, alertsRes] = await Promise.all([
+          fetch('/api/watchlists', {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch('/api/price-alerts', {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+
+        if (watchlistsRes.ok) {
+          const watchlistsData = await watchlistsRes.json();
+          setWatchlists(watchlistsData.watchlists || []);
+        }
+
+        if (alertsRes.ok) {
+          const alertsData = await alertsRes.json();
+          setAlerts(alertsData.alerts || []);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load saved items');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   if (loading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Heart className="h-5 w-5" />
-            Saved Items
-          </CardTitle>
+          <CardTitle>Saved Items</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin" />
+          <div className="flex flex-col items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+            <p className="text-sm text-muted-foreground">Loading saved items...</p>
           </div>
         </CardContent>
       </Card>
     );
   }
 
+  const totalItems = watchlists.length + alerts.length;
+  const activeAlerts = alerts.filter(a => !a.triggered).length;
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Heart className="h-5 w-5" />
-          Saved Items
-        </CardTitle>
-        <CardDescription>
-          Your watchlists and price alerts
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <CardTitle>Saved Items</CardTitle>
+          <Link href="/tools">
+            <Button variant="ghost" size="sm" className="gap-2">
+              <Plus className="h-4 w-4" />
+              Add New
+            </Button>
+          </Link>
+        </div>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="watchlists" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="watchlists" className="flex items-center gap-2">
-              <Heart className="h-4 w-4" />
-              Watchlists ({watchlists.length})
-            </TabsTrigger>
-            <TabsTrigger value="alerts" className="flex items-center gap-2">
-              <Bell className="h-4 w-4" />
-              Alerts ({alerts.length})
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="watchlists" className="space-y-4">
-            {watchlists.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <Heart className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No watchlists yet</p>
-                <p className="text-sm">Create a watchlist to track your favorite tokens</p>
-                <Button variant="outline" size="sm" className="mt-4 gap-2">
-                  <Plus className="h-4 w-4" />
-                  Create Watchlist
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {watchlists.map((watchlist) => (
-                  <div key={watchlist.id} className="p-4 rounded-lg border">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-medium">{watchlist.name}</h4>
-                      <Badge variant="outline">{watchlist.tokens.length} tokens</Badge>
-                    </div>
-                    <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
-                      {watchlist.tokens.slice(0, 6).map((token, index) => (
-                        <div key={index} className="flex items-center justify-between text-sm">
-                          <span className="font-medium">{token.symbol}</span>
-                          <div className="flex items-center gap-1">
-                            {token.change24h !== undefined && (
-                              <>
-                                {token.change24h >= 0 ? (
-                                  <TrendingUp className="h-3 w-3 text-green-500" />
-                                ) : (
-                                  <TrendingDown className="h-3 w-3 text-red-500" />
-                                )}
-                                <span className={`text-xs ${token.change24h >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                                  {token.change24h.toFixed(2)}%
-                                </span>
-                              </>
-                            )}
+        {totalItems === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <Info className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No Saved Items</h3>
+            <p className="text-sm text-muted-foreground max-w-md mb-4">
+              Create watchlists and price alerts to track your favorite tokens
+            </p>
+            <Link href="/tools">
+              <Button>Go to Tools</Button>
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {/* Watchlists Section */}
+            {watchlists.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold flex items-center gap-2">
+                    <Star className="h-4 w-4 text-yellow-500" />
+                    Watchlists
+                  </h3>
+                  <Badge variant="secondary">{watchlists.length}</Badge>
+                </div>
+                <div className="space-y-2">
+                  {watchlists.slice(0, 3).map((watchlist) => (
+                    <Link key={watchlist.id} href="/tools">
+                      <div className="p-3 rounded-lg border hover:border-primary/50 hover:bg-muted/50 transition-all cursor-pointer">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium text-sm">{watchlist.name}</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {Array.isArray(watchlist.tokens) ? watchlist.tokens.length : 0} tokens
+                            </p>
                           </div>
+                          <TrendingUp className="h-4 w-4 text-muted-foreground" />
                         </div>
-                      ))}
-                    </div>
-                    {watchlist.tokens.length > 6 && (
-                      <p className="text-xs text-muted-foreground mt-2">
-                        +{watchlist.tokens.length - 6} more tokens
-                      </p>
-                    )}
-                  </div>
-                ))}
+                      </div>
+                    </Link>
+                  ))}
+                  {watchlists.length > 3 && (
+                    <Link href="/tools">
+                      <Button variant="ghost" size="sm" className="w-full">
+                        View {watchlists.length - 3} more
+                      </Button>
+                    </Link>
+                  )}
+                </div>
               </div>
             )}
-          </TabsContent>
 
-          <TabsContent value="alerts" className="space-y-4">
-            {alerts.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No price alerts set</p>
-                <p className="text-sm">Set alerts to get notified when prices hit your targets</p>
-                <Button variant="outline" size="sm" className="mt-4 gap-2">
-                  <Plus className="h-4 w-4" />
-                  Create Alert
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {alerts.map((alert) => (
-                  <div key={alert.id} className="flex items-center justify-between p-3 rounded-lg border">
-                    <div className="flex items-center gap-3">
-                      <Bell className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{alert.tokenSymbol}</span>
-                          {alert.triggered && <Badge variant="default">Triggered</Badge>}
+            {/* Price Alerts Section */}
+            {alerts.length > 0 && (
+              <div className="space-y-2 pt-4 border-t">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold flex items-center gap-2">
+                    <Bell className="h-4 w-4 text-blue-500" />
+                    Price Alerts
+                  </h3>
+                  <Badge variant="secondary">{activeAlerts} active</Badge>
+                </div>
+                <div className="space-y-2">
+                  {alerts.slice(0, 3).map((alert) => (
+                    <Link key={alert.id} href="/tools">
+                      <div className="p-3 rounded-lg border hover:border-primary/50 hover:bg-muted/50 transition-all cursor-pointer">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium text-sm">{alert.tokenSymbol}</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {alert.condition === 'above' ? '↑' : '↓'} ${alert.targetPrice.toFixed(2)}
+                            </p>
+                          </div>
+                          {alert.triggered ? (
+                            <Badge variant="default" className="text-xs">Triggered</Badge>
+                          ) : (
+                            <Badge variant="secondary" className="text-xs">Active</Badge>
+                          )}
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                          {alert.condition} ${alert.targetPrice.toFixed(2)}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Created {format(new Date(alert.createdAt), 'MMM dd, yyyy')}
-                        </p>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium">
-                        Target: ${alert.targetPrice.toFixed(2)}
-                      </div>
-                      {alert.currentPrice && (
-                        <div className="text-xs text-muted-foreground">
-                          Current: ${alert.currentPrice.toFixed(2)}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                    </Link>
+                  ))}
+                  {alerts.length > 3 && (
+                    <Link href="/tools">
+                      <Button variant="ghost" size="sm" className="w-full">
+                        View {alerts.length - 3} more
+                      </Button>
+                    </Link>
+                  )}
+                </div>
               </div>
             )}
-          </TabsContent>
-        </Tabs>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

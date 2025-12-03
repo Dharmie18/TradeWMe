@@ -1,22 +1,23 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
-import { user, transaction } from '@/db/schema';
+import { users, transactions } from '@/db/schema';
 import { sql, count } from 'drizzle-orm';
 
 export async function GET() {
     try {
         // Get total number of users
-        const [userCount] = await db.select({ count: count() }).from(user);
+        const [userCount] = await db.select({ count: count() }).from(users);
 
         // Get total number of transactions
-        const [transactionCount] = await db.select({ count: count() }).from(transaction);
+        const [transactionCount] = await db.select({ count: count() }).from(transactions);
 
         // Get total trading volume (sum of all transaction amounts)
+        // Using amountIn as a proxy for volume since we don't have USD value on transaction
         const [volumeData] = await db
             .select({
-                total: sql<number>`COALESCE(SUM(CAST(${transaction.amount} AS DECIMAL)), 0)`
+                total: sql<number>`COALESCE(SUM(${transactions.amountIn}), 0)`
             })
-            .from(transaction);
+            .from(transactions);
 
         // Get number of unique countries (if you have this data)
         // For now, we'll estimate based on user distribution or set to a reasonable number

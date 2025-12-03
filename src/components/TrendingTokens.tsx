@@ -119,9 +119,9 @@ export function TrendingTokens() {
       <CardContent>
         <div className="space-y-3 md:space-y-4">
           {tokens.slice(0, 5).map((token, index) => (
-            <div 
-              key={token.id} 
-              className="flex items-center gap-3 md:gap-4 p-3 rounded-lg hover:bg-muted/50 transition-all cursor-pointer group relative"
+            <div
+              key={token.id}
+              className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 md:gap-4 p-2 sm:p-3 rounded-lg hover:bg-muted/50 transition-all cursor-pointer group relative"
               onMouseEnter={() => setHoveredToken(token.id)}
               onMouseLeave={() => setHoveredToken(null)}
             >
@@ -139,13 +139,12 @@ export function TrendingTokens() {
                 <p className="font-medium text-sm md:text-base">{token.price}</p>
                 <p className="text-xs text-muted-foreground">{formatVolume(token.volume)}</p>
               </div>
-              <Badge 
-                variant="outline" 
-                className={`${
-                  token.priceChange24h >= 0 
-                    ? 'text-green-500 border-green-500' 
+              <Badge
+                variant="outline"
+                className={`${token.priceChange24h >= 0
+                    ? 'text-green-500 border-green-500'
                     : 'text-red-500 border-red-500'
-                } whitespace-nowrap`}
+                  } whitespace-nowrap`}
               >
                 {token.priceChange24h >= 0 ? '+' : ''}{token.priceChange24h.toFixed(1)}%
               </Badge>
@@ -153,21 +152,21 @@ export function TrendingTokens() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="h-8 w-8 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                   onClick={(e) => toggleWatchlist(token.id, e)}
                 >
-                  <Star className={`h-4 w-4 ${watchlist.has(token.id) ? 'fill-yellow-500 text-yellow-500' : ''}`} />
+                  <Star className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${watchlist.has(token.id) ? 'fill-yellow-500 text-yellow-500' : ''}`} />
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="h-8 w-8 hidden sm:flex sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                   onClick={(e) => {
                     e.stopPropagation();
                     toast.info('View details coming soon');
                   }}
                 >
-                  <ExternalLink className="h-4 w-4" />
+                  <ExternalLink className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </Button>
               </div>
             </div>

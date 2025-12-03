@@ -52,19 +52,19 @@ export function LivePriceTicker() {
   return (
     <div className="border-b bg-muted/30 overflow-hidden">
       <div className="relative flex">
-        <div className="flex animate-ticker gap-8 py-2">
+        <div className="flex animate-ticker gap-4 sm:gap-6 md:gap-8 py-2 sm:py-2.5">
           {/* Duplicate the array to create seamless loop */}
           {[...tokens, ...tokens].map((token, index) => (
-            <div key={index} className="flex items-center gap-2 whitespace-nowrap px-4">
-              <span className="font-semibold text-sm">{token.symbol}</span>
-              <span className="text-sm">{formatPrice(token.price)}</span>
-              <div className={`flex items-center gap-1 ${token.change24h >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+            <div key={index} className="flex items-center gap-1.5 sm:gap-2 whitespace-nowrap px-2 sm:px-3 md:px-4">
+              <span className="font-semibold text-xs sm:text-sm">{token.symbol}</span>
+              <span className="text-xs sm:text-sm">{formatPrice(token.price)}</span>
+              <div className={`flex items-center gap-0.5 sm:gap-1 ${token.change24h >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                 {token.change24h >= 0 ? (
-                  <TrendingUp className="h-3 w-3" />
+                  <TrendingUp className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                 ) : (
-                  <TrendingDown className="h-3 w-3" />
+                  <TrendingDown className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                 )}
-                <span className="text-xs font-medium">
+                <span className="text-[10px] sm:text-xs font-medium">
                   {token.change24h >= 0 ? '+' : ''}{token.change24h.toFixed(2)}%
                 </span>
               </div>

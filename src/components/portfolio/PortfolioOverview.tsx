@@ -24,21 +24,21 @@ export function PortfolioOverview() {
     },
     {
       label: '24h P&L',
-      value: '$0.00', // Placeholder until we have historical data
-      change: '0.0%',
+      value: isConnected ? '$0.00' : '—',
+      change: isConnected ? '0.0%' : '',
       isPositive: true,
       icon: TrendingUp,
     },
     {
       label: 'Total Invested',
-      value: '$0.00', // Placeholder
+      value: isConnected ? '$0.00' : '—',
       change: '',
       isPositive: true,
       icon: DollarSign,
     },
     {
       label: 'Active Positions',
-      value: '0', // Placeholder
+      value: isConnected ? '0' : '—',
       change: '',
       isPositive: true,
       icon: Activity,

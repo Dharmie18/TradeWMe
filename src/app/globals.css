@@ -217,3 +217,110 @@
 nextjs-portal {
   display: none !important;
 }
+
+/* ============================================
+   RESPONSIVE MEDIA QUERIES
+   ============================================ */
+
+/* Mobile-first adjustments */
+@media (max-width: 640px) {
+
+  /* Reduce animation intensity on mobile */
+  .animate-pulse {
+    animation-duration: 3s;
+  }
+
+  /* Slower ticker on mobile for readability */
+  .animate-ticker {
+    animation: ticker 40s linear infinite;
+  }
+
+  /* Reduce transform effects on mobile */
+  .hover\:scale-105:hover {
+    transform: scale(1.02);
+  }
+
+  .hover\:scale-110:hover {
+    transform: scale(1.05);
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .animate-ticker {
+    animation: ticker 35s linear infinite;
+  }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .animate-ticker {
+    animation: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .text-muted-foreground {
+    opacity: 1;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+
+  /* Make touch targets larger */
+  button,
+  a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Remove hover effects on touch devices */
+  .group-hover\:opacity-100 {
+    opacity: 1 !important;
+  }
+
+  .hover\:bg-muted\/50:hover {
+    background-color: transparent;
+  }
+}
+
+/* Small mobile devices (< 375px) */
+@media (max-width: 374px) {
+
+  /* Further reduce text sizes */
+  .text-3xl {
+    font-size: 1.5rem;
+  }
+
+  .text-4xl {
+    font-size: 1.75rem;
+  }
+
+  .text-5xl {
+    font-size: 2rem;
+  }
+
+  /* Reduce padding */
+  .container {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+}
+
+/* Large desktop (> 1536px) */
+@media (min-width: 1536px) {
+  .container {
+    max-width: 1400px;
+  }
+}

@@ -127,7 +127,7 @@ export function Header() {
           </Link>
 
           {/* Wallet Connect Button - Always visible */}
-          <div className="hidden sm:block">
+          <div className="block">
             <ConnectButton />
           </div>
 

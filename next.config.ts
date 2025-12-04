@@ -46,6 +46,13 @@ const nextConfig: NextConfig = {
       'tap': false,
       'tape': false,
       'why-is-node-running': false,
+      '@react-native-async-storage/async-storage': false,
+    };
+
+    // Fix wagmi's porto connector import issue
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      'porto': false,
     };
 
     // Use IgnorePlugin to completely exclude test directories

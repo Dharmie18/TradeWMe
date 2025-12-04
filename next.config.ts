@@ -27,11 +27,14 @@ const nextConfig: NextConfig = {
     config.module = config.module || {};
     config.module.rules = config.module.rules || [];
 
-    // Ignore viem test decorators that cause build issues
-    config.module.rules.push({
-      test: /node_modules\/viem\/_cjs\/clients\/decorators\/test\.js$/,
-      use: 'null-loader',
-    });
+    // Ignore viem test decorators completely
+    config.plugins = config.plugins || [];
+    config.plugins.push(
+      new webpack.NormalModuleReplacementPlugin(
+        /node_modules\/viem\/_cjs\/clients\/decorators\/test\.js$/,
+        require.resolve('./webpack-empty-module.js')
+      )
+    );
 
     // Ignore all test files
     config.module.rules.push({
@@ -62,11 +65,18 @@ const nextConfig: NextConfig = {
     };
 
     // Use IgnorePlugin to completely exclude test directories
-    config.plugins = config.plugins || [];
     config.plugins.push(
       new webpack.IgnorePlugin({
         resourceRegExp: /\/test\//,
         contextRegExp: /thread-stream/,
+      })
+    );
+
+    // Ignore viem test module completely
+    config.plugins.push(
+      new webpack.IgnorePlugin({
+        resourceRegExp: /clients\/decorators\/test/,
+        contextRegExp: /viem/,
       })
     );
 

@@ -109,7 +109,7 @@ Go to deployment → Functions tab
 
 ---
 
-## 🎉 Success Criteria
+##  Success Criteria
 
 Deployment is successful when:
 - [ ] Build completes without errors

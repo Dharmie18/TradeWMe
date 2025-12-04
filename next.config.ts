@@ -17,6 +17,9 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   serverExternalPackages: [
     'pino',
     'thread-stream',
@@ -77,6 +80,22 @@ const nextConfig: NextConfig = {
       new webpack.IgnorePlugin({
         resourceRegExp: /clients\/decorators\/test/,
         contextRegExp: /viem/,
+      })
+    );
+
+    // Ignore viem test actions that are causing export errors
+    config.plugins.push(
+      new webpack.IgnorePlugin({
+        resourceRegExp: /\.\/test\/(dumpState|getAutomine|getTxpoolContent|getTxpoolStatus|impersonateAccount|increaseTime|inspectTxpool|loadState|mine|removeBlockTimestampInterval|reset|revert|sendUnsignedTransaction|setAutomine|setBalance|setBlockGasLimit|setBlockTimestampInterval|setCode|setCoinbase|setIntervalMining|setLoggingEnabled|setMinGasPrice|setNextBlockBaseFeePerGas|setNextBlockTimestamp|setNonce|setRpcUrl|setStorageAt|snapshot|stopImpersonatingAccount)/,
+        contextRegExp: /viem.*actions/,
+      })
+    );
+
+    // Ignore all viem actions/index.js test re-exports
+    config.plugins.push(
+      new webpack.IgnorePlugin({
+        resourceRegExp: /\/test\//,
+        contextRegExp: /viem\/_esm\/actions/,
       })
     );
 

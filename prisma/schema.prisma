@@ -1,0 +1,369 @@
+// =============================================================================
+// PRODUCTION TRADING PLATFORM - DATABASE SCHEMA
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================================
+// USER AUTHENTICATION & VERIFICATION
+// =============================================================================
+
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  name              String?
+  password          String    // Hashed with bcrypt
+  emailVerified     Boolean   @default(false)
+  emailVerifiedAt   DateTime?
+  role              UserRole  @default(USER)
+  accountType       AccountType @default(REAL) // REAL or DEMO
+  isActive          Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  lastLoginAt       DateTime?
+
+  // Relations
+  verificationTokens EmailVerificationToken[]
+  wallets            Wallet[]
+  deposits           Deposit[]
+  transactions       Transaction[]
+  balances           Balance[]
+  profitRecords      ProfitRecord[]
+  profitSettings     ProfitSettings?
+  auditLogs          AuditLog[]
+  sessions           Session[]
+
+  @@index([email])
+  @@index([emailVerified])
+  @@index([accountType])
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum AccountType {
+  REAL      // Real trading account - NO simulation
+  DEMO      // Demo/Sandbox - simulation allowed
+}
+
+// Email Verification Tokens
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// Sessions
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+}
+
+// =============================================================================
+// WALLET MANAGEMENT
+// =============================================================================
+
+model Wallet {
+  id              String   @id @default(cuid())
+  userId          String
+  address         String   @unique
+  chain           String   // ethereum, bsc, polygon
+  walletType      String   // metamask, walletconnect, coinbase
+  isActive        Boolean  @default(true)
+  connectedAt     DateTime @default(now())
+  lastUsedAt      DateTime @default(now())
+  
+  // Initial balance is ALWAYS 0 on connect
+  initialBalance  Decimal  @default(0) @db.Decimal(20, 8)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deposits Deposit[]
+
+  @@index([userId])
+  @@index([address])
+  @@index([chain])
+}
+
+// =============================================================================
+// DEPOSITS & TRANSACTIONS
+// =============================================================================
+
+model Deposit {
+  id              String   @id @default(cuid())
+  userId          String
+  walletId        String
+  txHash          String   @unique
+  fromAddress     String
+  toAddress       String
+  amount          Decimal  @db.Decimal(20, 8)
+  currency        String   // ETH, BTC, USDT, etc.
+  chain           String   // ethereum, bsc, polygon
+  amountUsd       Decimal  @db.Decimal(20, 2)
+  
+  status          DepositStatus @default(PENDING)
+  confirmations   Int      @default(0)
+  requiredConfirmations Int @default(12)
+  blockNumber     BigInt?
+  blockTimestamp  DateTime?
+  
+  gasUsed         String?
+  gasPriceGwei    String?
+  
+  verifiedAt      DateTime?
+  confirmedAt     DateTime?
+  
+  qrCodeGenerated Boolean  @default(false)
+  qrCodeUrl       String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wallet Wallet @relation(fields: [walletId], references: [id])
+
+  @@index([userId])
+  @@index([txHash])
+  @@index([status])
+  @@index([chain])
+}
+
+enum DepositStatus {
+  PENDING
+  CONFIRMING
+  CONFIRMED
+  FAILED
+  REJECTED
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  userId      String
+  txHash      String   @unique
+  type        TransactionType
+  fromToken   String?
+  toToken     String?
+  amountIn    Decimal? @db.Decimal(20, 8)
+  amountOut   Decimal? @db.Decimal(20, 8)
+  chain       String
+  status      String   @default("pending")
+  gasUsed     String?
+  gasFee      Decimal? @db.Decimal(20, 8)
+  timestamp   DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([txHash])
+  @@index([type])
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  SWAP
+  TRANSFER
+}
+
+// =============================================================================
+// BALANCES & PROFITS
+// =============================================================================
+
+model Balance {
+  id              String   @id @default(cuid())
+  userId          String
+  currency        String   // ETH, USDT, etc.
+  balance         Decimal  @default(0) @db.Decimal(20, 8)
+  lockedBalance   Decimal  @default(0) @db.Decimal(20, 8)
+  totalDeposited  Decimal  @default(0) @db.Decimal(20, 8)
+  totalWithdrawn  Decimal  @default(0) @db.Decimal(20, 8)
+  totalProfits    Decimal  @default(0) @db.Decimal(20, 8)
+  balanceUsd      Decimal  @default(0) @db.Decimal(20, 2)
+  lastUpdated     DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, currency])
+  @@index([userId])
+}
+
+model ProfitRecord {
+  id          String   @id @default(cuid())
+  userId      String
+  profitType  ProfitType
+  amount      Decimal  @db.Decimal(20, 8)
+  amountUsd   Decimal  @db.Decimal(20, 2)
+  currency    String
+  rate        Decimal  @db.Decimal(10, 6)
+  baseAmount  Decimal  @db.Decimal(20, 8)
+  
+  // SIMULATION MODE TRACKING
+  isSimulated Boolean  @default(false)
+  simulationMultiplier Decimal? @db.Decimal(10, 4)
+  
+  calculatedAt DateTime @default(now())
+  appliedAt    DateTime?
+  status       ProfitStatus @default(PENDING)
+  metadata     Json?
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isSimulated])
+  @@index([status])
+}
+
+enum ProfitType {
+  DAILY
+  TRADING
+  STAKING
+  REFERRAL
+  BONUS
+}
+
+enum ProfitStatus {
+  PENDING
+  APPLIED
+  CANCELLED
+}
+
+model ProfitSettings {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  dailyProfitRate       Decimal  @default(0.02) @db.Decimal(10, 6)
+  tradingProfitRate     Decimal  @default(0.05) @db.Decimal(10, 6)
+  compoundingEnabled    Boolean  @default(false)
+  autoApplyProfits      Boolean  @default(true)
+  minBalanceForProfits  Decimal  @default(0.01) @db.Decimal(20, 8)
+  lastProfitCalculation DateTime?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// =============================================================================
+// SIMULATION MODE (DEMO ACCOUNTS ONLY)
+// =============================================================================
+
+model SimulationAdjustment {
+  id              String   @id @default(cuid())
+  userId          String
+  adminId         String
+  accountType     AccountType
+  adjustmentType  String   // profit_multiplier, balance_adjustment
+  previousValue   Decimal? @db.Decimal(20, 8)
+  newValue        Decimal  @db.Decimal(20, 8)
+  multiplier      Decimal? @db.Decimal(10, 4)
+  reason          String
+  isActive        Boolean  @default(true)
+  appliedAt       DateTime @default(now())
+  expiresAt       DateTime?
+  createdAt       DateTime @default(now())
+
+  @@index([userId])
+  @@index([adminId])
+  @@index([isActive])
+}
+
+// =============================================================================
+// AUDIT LOGS (FULL TRANSPARENCY)
+// =============================================================================
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  adminId     String?
+  action      String   // wallet_connect, deposit_verify, simulation_enable, etc.
+  entity      String   // user, wallet, deposit, simulation
+  entityId    String?
+  previousData Json?
+  newData      Json?
+  ipAddress    String?
+  userAgent    String?
+  metadata     Json?
+  createdAt    DateTime @default(now())
+
+  user  User? @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([adminId])
+  @@index([action])
+  @@index([entity])
+  @@index([createdAt])
+}
+
+// =============================================================================
+// PRICE DATA CACHE
+// =============================================================================
+
+model PriceCache {
+  id        String   @id @default(cuid())
+  symbol    String   @unique // ETH, BTC, SOL
+  priceUsd  Decimal  @db.Decimal(20, 8)
+  change24h Decimal  @db.Decimal(10, 4)
+  volume24h Decimal  @db.Decimal(20, 2)
+  source    String   // coingecko, binance
+  updatedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+
+  @@index([symbol])
+  @@index([updatedAt])
+}
+
+// =============================================================================
+// QR CODE RECORDS
+// =============================================================================
+
+model QRCode {
+  id          String   @id @default(cuid())
+  userId      String?
+  address     String
+  chain       String
+  amount      Decimal? @db.Decimal(20, 8)
+  currency    String?
+  uri         String   // ethereum:0x...?value=1000000000000000000
+  imageUrl    String?
+  signature   String?  // Signed with QR_SECRET_SALT
+  expiresAt   DateTime?
+  usedAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([address])
+  @@index([userId])
+}

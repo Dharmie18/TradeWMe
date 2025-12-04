@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowDownUp, Settings2, Zap } from 'lucide-react';
+import { ArrowDownUp, Settings2, Zap, RefreshCw } from 'lucide-react';
 import { TokenSelector } from './TokenSelector';
 import { SlippageSettings } from './SlippageSettings';
 import { useAccount, useBalance } from 'wagmi';
@@ -21,6 +21,8 @@ export function SwapInterface() {
   const [slippage, setSlippage] = useState(0.5);
   const [showSettings, setShowSettings] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [exchangeRate, setExchangeRate] = useState<number>(0);
+  const [isLoadingRate, setIsLoadingRate] = useState(false);
 
   // Fetch Balance for Token In
   const { data: balanceIn } = useBalance({
@@ -33,6 +35,57 @@ export function SwapInterface() {
     address,
     token: tokenOut.address === '0xEth' ? undefined : (tokenOut.address as Address),
   });
+
+  // Fetch real-time exchange rate
+  const fetchExchangeRate = async () => {
+    if (!amountIn || parseFloat(amountIn) === 0) {
+      setAmountOut('');
+      return;
+    }
+
+    setIsLoadingRate(true);
+    try {
+      const response = await fetch('/api/crypto/price', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: tokenIn.symbol,
+          to: tokenOut.symbol,
+          amount: amountIn,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success && data.rate) {
+        setExchangeRate(data.rate);
+        setAmountOut((parseFloat(amountIn) * data.rate).toFixed(6));
+      }
+    } catch (error) {
+      console.error('Failed to fetch exchange rate:', error);
+    } finally {
+      setIsLoadingRate(false);
+    }
+  };
+
+  // Auto-update exchange rate when amount or tokens change
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchExchangeRate();
+    }, 500); // Debounce for 500ms
+
+    return () => clearTimeout(timer);
+  }, [amountIn, tokenIn, tokenOut]);
+
+  // Real-time price updates every 10 seconds
+  useEffect(() => {
+    if (!amountIn) return;
+
+    const interval = setInterval(() => {
+      fetchExchangeRate();
+    }, 10000); // Update every 10 seconds
+
+    return () => clearInterval(interval);
+  }, [amountIn, tokenIn, tokenOut]);
 
   const handleSwapTokens = () => {
     const temp = tokenIn;
@@ -73,7 +126,10 @@ export function SwapInterface() {
     <Card className="w-full">
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg md:text-xl">Swap</CardTitle>
+          <CardTitle className="text-lg md:text-xl flex items-center gap-2">
+            Swap
+            {isLoadingRate && <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />}
+          </CardTitle>
           <Button
             variant="ghost"
             size="icon"

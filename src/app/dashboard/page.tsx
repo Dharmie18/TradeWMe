@@ -17,7 +17,10 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!isPending && !session?.user) {
+      console.log('No session found, redirecting to login');
       router.push('/login?redirect=/dashboard');
+    } else if (session?.user) {
+      console.log('Session found:', session.user);
     }
   }, [session, isPending, router]);
 

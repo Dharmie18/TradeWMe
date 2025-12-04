@@ -21,7 +21,7 @@ function TradingChart() {
         new window.TradingView.widget({
           autosize: true,
           symbol: 'COINBASE:ETHUSD',
-          interval: 'D',
+          interval: '15', // 15-minute intervals for real-time feel
           timezone: 'Etc/UTC',
           theme: 'dark',
           style: '1',
@@ -31,6 +31,20 @@ function TradingChart() {
           hide_side_toolbar: false,
           allow_symbol_change: true,
           container_id: 'tradingview_chart',
+          // Real-time data settings
+          studies: [
+            'MASimple@tv-basicstudies',
+            'RSI@tv-basicstudies'
+          ],
+          disabled_features: [],
+          enabled_features: [
+            'study_templates',
+            'use_localstorage_for_settings',
+            'save_chart_properties_to_local_storage'
+          ],
+          // Auto-refresh for real-time updates
+          datafeed: undefined, // Uses TradingView's real-time datafeed
+          library_path: 'https://s3.tradingview.com/tv.js',
         });
       }
     };

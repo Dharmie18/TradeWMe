@@ -78,7 +78,6 @@ export const subscriptions = sqliteTable('subscriptions', {
   updatedAt: text('updated_at').notNull(),
 });
 
-
 // Auth tables for better-auth
 export const user = sqliteTable("user", {
   id: text("id").primaryKey(),
@@ -143,4 +142,89 @@ export const verification = sqliteTable("verification", {
   updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(
     () => new Date(),
   ),
+});
+
+// ============================================================================
+// TRADING PLATFORM TABLES - Wallet Integration & Deposits
+// ============================================================================
+
+// User Wallets table - tracks connected wallets per user
+export const userWallets = sqliteTable('user_wallets', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  walletAddress: text('wallet_address').notNull().unique(),
+  walletType: text('wallet_type').notNull(), // 'metamask', 'coinbase', 'walletconnect'
+  isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+});
+
+// Deposits table - tracks all user deposits
+export const deposits = sqliteTable('deposits', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  walletId: integer('wallet_id').notNull().references(() => userWallets.id),
+  txHash: text('tx_hash').notNull().unique(),
+  fromAddress: text('from_address').notNull(),
+  toAddress: text('to_address').notNull(),
+  amount: text('amount').notNull(), // Store as string to avoid precision loss
+  currency: text('currency').notNull().default('ETH'), // ETH, USDT, USDC, etc.
+  amountUsd: real('amount_usd').notNull(), // USD value at time of deposit
+  status: text('status').notNull().default('pending'), // 'pending', 'confirmed', 'failed'
+  confirmations: integer('confirmations').notNull().default(0),
+  blockNumber: integer('block_number'),
+  gasUsed: text('gas_used'),
+  gasPriceGwei: text('gas_price_gwei'),
+  network: text('network').notNull().default('ethereum'), // 'ethereum', 'polygon', 'bsc'
+  depositedAt: text('deposited_at').notNull(),
+  confirmedAt: text('confirmed_at'),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+});
+
+// User Balances table - current balance per user per currency
+export const userBalances = sqliteTable('user_balances', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  currency: text('currency').notNull(), // 'ETH', 'USDT', 'USDC', etc.
+  balance: text('balance').notNull().default('0'), // Available balance
+  lockedBalance: text('locked_balance').notNull().default('0'), // In active trades
+  totalDeposited: text('total_deposited').notNull().default('0'),
+  totalWithdrawn: text('total_withdrawn').notNull().default('0'),
+  totalProfits: text('total_profits').notNull().default('0'),
+  balanceUsd: real('balance_usd').notNull().default(0),
+  lastUpdated: text('last_updated').notNull(),
+  createdAt: text('created_at').notNull(),
+});
+
+// Profit Records table - tracks profit calculations
+export const profitRecords = sqliteTable('profit_records', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  balanceId: integer('balance_id').notNull().references(() => userBalances.id),
+  profitType: text('profit_type').notNull(), // 'daily', 'trading', 'staking', 'referral'
+  amount: text('amount').notNull(),
+  amountUsd: real('amount_usd').notNull(),
+  currency: text('currency').notNull(),
+  rate: real('rate').notNull(), // Profit rate applied (e.g., 0.05 for 5%)
+  baseAmount: text('base_amount').notNull(), // Amount profit was calculated on
+  calculatedAt: text('calculated_at').notNull(),
+  appliedAt: text('applied_at'),
+  status: text('status').notNull().default('pending'), // 'pending', 'applied', 'cancelled'
+  metadata: text('metadata', { mode: 'json' }), // Additional data (trade details, etc.)
+  createdAt: text('created_at').notNull(),
+});
+
+// Profit Settings table - configurable profit rates per user
+export const profitSettings = sqliteTable('profit_settings', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }).unique(),
+  dailyProfitRate: real('daily_profit_rate').notNull().default(0.02), // 2% daily default
+  tradingProfitRate: real('trading_profit_rate').notNull().default(0.05), // 5% per trade
+  compoundingEnabled: integer('compounding_enabled', { mode: 'boolean' }).notNull().default(false),
+  autoApplyProfits: integer('auto_apply_profits', { mode: 'boolean' }).notNull().default(true),
+  minBalanceForProfits: text('min_balance_for_profits').notNull().default('0.01'),
+  lastProfitCalculation: text('last_profit_calculation'),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
 });

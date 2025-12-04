@@ -62,9 +62,17 @@ const nextConfig: NextConfig = {
     };
 
     // Fix wagmi's porto connector import issue
+    const path = require('path');
+    const emptyModulePath = path.resolve(__dirname, 'webpack-empty-module.js');
+
     config.resolve.alias = {
       ...config.resolve.alias,
       'porto': false,
+      // Replace viem test decorators with empty module
+      'viem/_esm/clients/decorators/test.js': emptyModulePath,
+      'viem/_cjs/clients/decorators/test.js': emptyModulePath,
+      'viem/_esm/clients/decorators/test': emptyModulePath,
+      'viem/_cjs/clients/decorators/test': emptyModulePath,
     };
 
     // Use IgnorePlugin to completely exclude test directories

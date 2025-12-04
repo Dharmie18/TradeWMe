@@ -1,48 +1,42 @@
-// ============================================================================
-// BLOCKCHAIN UTILITIES - Real-time transaction verification
-// ============================================================================
+// =============================================================================
+// BLOCKCHAIN VERIFICATION - Real Transaction Verification
+// =============================================================================
 
-import { createPublicClient, http, formatEther, type PublicClient } from 'viem';
-import { mainnet, polygon, bsc, arbitrum, optimism } from 'viem/chains';
-import type { NetworkType } from '@/types/trading';
+import { ethers } from 'ethers';
+import { createPublicClient, http, formatEther } from 'viem';
+import { mainnet, sepolia, bsc, polygon } from 'viem/chains';
 
 // Network configurations
-const NETWORK_CONFIGS = {
+const NETWORKS = {
   ethereum: {
     chain: mainnet,
-    rpcUrl: 'https://eth.llamarpc.com', // Free public RPC
-    explorerUrl: 'https://etherscan.io',
+    rpcUrl: process.env.ETHEREUM_RPC_URL!,
+    minConfirmations: parseInt(process.env.MIN_ETH_CONFIRMATIONS || '12'),
   },
-  polygon: {
-    chain: polygon,
-    rpcUrl: 'https://polygon-rpc.com', // Free public RPC
-    explorerUrl: 'https://polygonscan.com',
+  'ethereum-testnet': {
+    chain: sepolia,
+    rpcUrl: process.env.ETHEREUM_TESTNET_RPC_URL!,
+    minConfirmations: 3,
   },
   bsc: {
     chain: bsc,
-    rpcUrl: 'https://bsc-dataseed.binance.org', // Free public RPC
-    explorerUrl: 'https://bscscan.com',
+    rpcUrl: process.env.BSC_RPC_URL!,
+    minConfirmations: parseInt(process.env.MIN_BSC_CONFIRMATIONS || '15'),
   },
-  arbitrum: {
-    chain: arbitrum,
-    rpcUrl: 'https://arb1.arbitrum.io/rpc', // Free public RPC
-    explorerUrl: 'https://arbiscan.io',
+  polygon: {
+    chain: polygon,
+    rpcUrl: process.env.POLYGON_RPC_URL!,
+    minConfirmations: parseInt(process.env.MIN_POLYGON_CONFIRMATIONS || '128'),
   },
-  optimism: {
-    chain: optimism,
-    rpcUrl: 'https://mainnet.optimism.io', // Free public RPC
-    explorerUrl: 'https://optimistic.etherscan.io',
-  },
-} as const;
+};
 
-// Platform deposit address (REPLACE WITH YOUR ACTUAL ADDRESS)
-export const PLATFORM_DEPOSIT_ADDRESS = process.env.NEXT_PUBLIC_PLATFORM_DEPOSIT_ADDRESS || '0x0000000000000000000000000000000000000000';
+export type NetworkType = keyof typeof NETWORKS;
 
 /**
- * Get public client for a specific network
+ * Get public client for blockchain interaction
  */
-export function getPublicClient(network: NetworkType): PublicClient {
-  const config = NETWORK_CONFIGS[network];
+export function getPublicClient(network: NetworkType) {
+  const config = NETWORKS[network];
   
   return createPublicClient({
     chain: config.chain,
@@ -52,9 +46,12 @@ export function getPublicClient(network: NetworkType): PublicClient {
 
 /**
  * Verify a transaction on the blockchain
- * Returns transaction details including confirmations
+ * Returns full transaction details with confirmations
  */
-export async function verifyTransaction(txHash: string, network: NetworkType) {
+export async function verifyTransaction(
+  txHash: string,
+  network: NetworkType
+) {
   try {
     const client = getPublicClient(network);
     
@@ -75,7 +72,7 @@ export async function verifyTransaction(txHash: string, network: NetworkType) {
       hash: txHash as `0x${string}`,
     });
 
-    // Get current block number for confirmations
+    // Get current block for confirmations
     const currentBlock = await client.getBlockNumber();
     const confirmations = Number(currentBlock - receipt.blockNumber);
 
@@ -83,6 +80,9 @@ export async function verifyTransaction(txHash: string, network: NetworkType) {
     const block = await client.getBlock({
       blockNumber: receipt.blockNumber,
     });
+
+    // Check if transaction succeeded
+    const status = receipt.status === 'success' ? 'success' : 'failed';
 
     return {
       success: true,
@@ -93,41 +93,20 @@ export async function verifyTransaction(txHash: string, network: NetworkType) {
         value: formatEther(transaction.value),
         blockNumber: Number(receipt.blockNumber),
         confirmations,
-        status: receipt.status === 'success' ? 'success' : 'failed',
+        status,
         gasUsed: receipt.gasUsed.toString(),
         gasPrice: transaction.gasPrice?.toString() || '0',
         timestamp: Number(block.timestamp),
+        blockTimestamp: new Date(Number(block.timestamp) * 1000),
       },
     };
   } catch (error) {
-    console.error('Error verifying transaction:', error);
+    console.error('Transaction verification error:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to verify transaction',
+      error: error instanceof Error ? error.message : 'Verification failed',
     };
   }
-}
-
-/**
- * Check if transaction is sent to platform address
- */
-export function isValidDepositAddress(toAddress: string): boolean {
-  return toAddress.toLowerCase() === PLATFORM_DEPOSIT_ADDRESS.toLowerCase();
-}
-
-/**
- * Get minimum confirmations required for a network
- */
-export function getRequiredConfirmations(network: NetworkType): number {
-  const confirmations = {
-    ethereum: 12, // ~3 minutes
-    polygon: 128, // ~5 minutes
-    bsc: 15, // ~45 seconds
-    arbitrum: 10,
-    optimism: 10,
-  };
-  
-  return confirmations[network] || 12;
 }
 
 /**
@@ -137,59 +116,53 @@ export function hasEnoughConfirmations(
   confirmations: number,
   network: NetworkType
 ): boolean {
-  return confirmations >= getRequiredConfirmations(network);
+  const required = NETWORKS[network].minConfirmations;
+  return confirmations >= required;
 }
 
 /**
- * Get explorer URL for a transaction
+ * Get required confirmations for network
  */
-export function getExplorerUrl(txHash: string, network: NetworkType): string {
-  const config = NETWORK_CONFIGS[network];
-  return `${config.explorerUrl}/tx/${txHash}`;
+export function getRequiredConfirmations(network: NetworkType): number {
+  return NETWORKS[network].minConfirmations;
 }
 
 /**
- * Get current ETH price in USD (using CoinGecko)
+ * Validate Ethereum address
  */
-export async function getEthPriceUsd(): Promise<number> {
-  try {
-    const apiKey = process.env.COINGECKO_API_KEY;
-    const url = apiKey
-      ? `https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd&x_cg_demo_api_key=${apiKey}`
-      : 'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd';
-
-    const response = await fetch(url);
-    const data = await response.json();
-    
-    return data.ethereum?.usd || 0;
-  } catch (error) {
-    console.error('Error fetching ETH price:', error);
-    return 0;
-  }
+export function isValidAddress(address: string): boolean {
+  return /^0x[a-fA-F0-9]{40}$/.test(address);
 }
 
 /**
- * Get token price in USD (supports multiple tokens)
+ * Validate transaction hash
  */
-export async function getTokenPriceUsd(tokenSymbol: string): Promise<number> {
+export function isValidTxHash(txHash: string): boolean {
+  return /^0x[a-fA-F0-9]{64}$/.test(txHash);
+}
+
+/**
+ * Get token price in USD from CoinGecko
+ */
+export async function getTokenPriceUsd(symbol: string): Promise<number> {
   try {
     const tokenIds: Record<string, string> = {
       ETH: 'ethereum',
-      WETH: 'weth',
+      BTC: 'bitcoin',
+      SOL: 'solana',
       USDT: 'tether',
       USDC: 'usd-coin',
-      DAI: 'dai',
-      MATIC: 'matic-network',
       BNB: 'binancecoin',
+      MATIC: 'matic-network',
     };
 
-    const tokenId = tokenIds[tokenSymbol.toUpperCase()];
+    const tokenId = tokenIds[symbol.toUpperCase()];
     if (!tokenId) {
-      throw new Error(`Unsupported token: ${tokenSymbol}`);
+      throw new Error(`Unsupported token: ${symbol}`);
     }
 
     // Stablecoins always return 1
-    if (['USDT', 'USDC', 'DAI'].includes(tokenSymbol.toUpperCase())) {
+    if (['USDT', 'USDC'].includes(symbol.toUpperCase())) {
       return 1.0;
     }
 
@@ -203,13 +176,13 @@ export async function getTokenPriceUsd(tokenSymbol: string): Promise<number> {
     
     return data[tokenId]?.usd || 0;
   } catch (error) {
-    console.error('Error fetching token price:', error);
+    console.error('Price fetch error:', error);
     return 0;
   }
 }
 
 /**
- * Calculate USD value of a token amount
+ * Calculate USD value of token amount
  */
 export async function calculateUsdValue(
   amount: string,
@@ -222,7 +195,7 @@ export async function calculateUsdValue(
 }
 
 /**
- * Format wallet address for display (0x1234...5678)
+ * Format address for display
  */
 export function formatAddress(address: string): string {
   if (!address || address.length < 10) return address;
@@ -230,15 +203,15 @@ export function formatAddress(address: string): string {
 }
 
 /**
- * Validate Ethereum address format
+ * Get explorer URL for transaction
  */
-export function isValidAddress(address: string): boolean {
-  return /^0x[a-fA-F0-9]{40}$/.test(address);
-}
+export function getExplorerUrl(txHash: string, network: NetworkType): string {
+  const explorers: Record<NetworkType, string> = {
+    ethereum: 'https://etherscan.io',
+    'ethereum-testnet': 'https://sepolia.etherscan.io',
+    bsc: 'https://bscscan.com',
+    polygon: 'https://polygonscan.com',
+  };
 
-/**
- * Validate transaction hash format
- */
-export function isValidTxHash(txHash: string): boolean {
-  return /^0x[a-fA-F0-9]{64}$/.test(txHash);
+  return `${explorers[network]}/tx/${txHash}`;
 }

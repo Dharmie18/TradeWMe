@@ -27,16 +27,22 @@ const nextConfig: NextConfig = {
     config.module = config.module || {};
     config.module.rules = config.module.rules || [];
 
+    // Ignore viem test decorators that cause build issues
+    config.module.rules.push({
+      test: /node_modules\/viem\/_cjs\/clients\/decorators\/test\.js$/,
+      use: 'null-loader',
+    });
+
     // Ignore all test files
     config.module.rules.push({
       test: /\.test\.(js|ts|tsx)$/,
-      loader: 'ignore-loader',
+      use: 'null-loader',
     });
 
     // Ignore helper files in test directories
     config.module.rules.push({
       test: /node_modules\/.*\/test\/.*\.(js|ts)$/,
-      loader: 'ignore-loader',
+      use: 'null-loader',
     });
 
     // Ignore missing optional dependencies used only in tests

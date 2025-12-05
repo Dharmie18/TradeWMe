@@ -3,40 +3,68 @@
 
 const noop = () => { };
 
-// CJS exports
-module.exports = {
-    testActions: noop,
-    dropTransaction: noop,
-    dumpState: noop,
-    getAutomine: noop,
-    getTxpoolContent: noop,
-    getTxpoolStatus: noop,
-    impersonateAccount: noop,
-    increaseTime: noop,
-    inspectTxpool: noop,
-    loadState: noop,
-    mine: noop,
-    removeBlockTimestampInterval: noop,
-    reset: noop,
-    revert: noop,
-    sendUnsignedTransaction: noop,
-    setAutomine: noop,
-    setBalance: noop,
-    setBlockGasLimit: noop,
-    setBlockTimestampInterval: noop,
-    setCode: noop,
-    setCoinbase: noop,
-    setIntervalMining: noop,
-    setLoggingEnabled: noop,
-    setMinGasPrice: noop,
-    setNextBlockBaseFeePerGas: noop,
-    setNextBlockTimestamp: noop,
-    setNonce: noop,
-    setRpcUrl: noop,
-    setStorageAt: noop,
-    snapshot: noop,
-    stopImpersonatingAccount: noop,
-};
+export const testActions = noop;
+export const dropTransaction = noop;
+export const dumpState = noop;
+export const getAutomine = noop;
+export const getTxpoolContent = noop;
+export const getTxpoolStatus = noop;
+export const impersonateAccount = noop;
+export const increaseTime = noop;
+export const inspectTxpool = noop;
+export const loadState = noop;
+export const mine = noop;
+export const removeBlockTimestampInterval = noop;
+export const reset = noop;
+export const revert = noop;
+export const sendUnsignedTransaction = noop;
+export const setAutomine = noop;
+export const setBalance = noop;
+export const setBlockGasLimit = noop;
+export const setBlockTimestampInterval = noop;
+export const setCode = noop;
+export const setCoinbase = noop;
+export const setIntervalMining = noop;
+export const setLoggingEnabled = noop;
+export const setMinGasPrice = noop;
+export const setNextBlockBaseFeePerGas = noop;
+export const setNextBlockTimestamp = noop;
+export const setNonce = noop;
+export const setRpcUrl = noop;
+export const setStorageAt = noop;
+export const snapshot = noop;
+export const stopImpersonatingAccount = noop;
 
-// ESM named exports
-module.exports.default = module.exports;
+export default {
+    testActions,
+    dropTransaction,
+    dumpState,
+    getAutomine,
+    getTxpoolContent,
+    getTxpoolStatus,
+    impersonateAccount,
+    increaseTime,
+    inspectTxpool,
+    loadState,
+    mine,
+    removeBlockTimestampInterval,
+    reset,
+    revert,
+    sendUnsignedTransaction,
+    setAutomine,
+    setBalance,
+    setBlockGasLimit,
+    setBlockTimestampInterval,
+    setCode,
+    setCoinbase,
+    setIntervalMining,
+    setLoggingEnabled,
+    setMinGasPrice,
+    setNextBlockBaseFeePerGas,
+    setNextBlockTimestamp,
+    setNonce,
+    setRpcUrl,
+    setStorageAt,
+    snapshot,
+    stopImpersonatingAccount,
+};

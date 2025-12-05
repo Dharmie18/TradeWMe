@@ -1,5 +1,5 @@
 // =============================================================================
-// AUTHENTICATION UTILITIES
+// AUTH UTILITIES - JWT Verification & Token Management
 // =============================================================================
 
 import jwt from 'jsonwebtoken';
@@ -18,9 +18,11 @@ export interface JWTPayload {
  */
 export function verifyJWT(token: string): JWTPayload | null {
   try {
-    const secret = process.env.NEXTAUTH_SECRET;
+    const secret = process.env.BETTER_AUTH_SECRET || process.env.NEXTAUTH_SECRET;
+    
     if (!secret) {
-      throw new Error('NEXTAUTH_SECRET is not configured');
+      console.error('JWT secret not configured');
+      return null;
     }
 
     const decoded = jwt.verify(token, secret) as JWTPayload;
@@ -35,14 +37,17 @@ export function verifyJWT(token: string): JWTPayload | null {
  * Generate JWT token
  */
 export function generateJWT(payload: Omit<JWTPayload, 'iat' | 'exp'>): string {
-  const secret = process.env.NEXTAUTH_SECRET;
+  const secret = process.env.BETTER_AUTH_SECRET || process.env.NEXTAUTH_SECRET;
+  
   if (!secret) {
-    throw new Error('NEXTAUTH_SECRET is not configured');
+    throw new Error('JWT secret not configured');
   }
 
-  const expiresIn = process.env.JWT_EXPIRY || '24h';
-  
-  return jwt.sign(payload, secret, { expiresIn });
+  return jwt.sign(
+    payload,
+    secret,
+    { expiresIn: process.env.JWT_EXPIRY || '24h' }
+  );
 }
 
 /**
@@ -59,47 +64,11 @@ export function extractToken(authHeader: string | null): string | null {
 }
 
 /**
- * Validate email format
+ * Verify and decode token from request header
  */
-export function isValidEmail(email: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-}
-
-/**
- * Validate password strength
- */
-export function isStrongPassword(password: string): {
-  valid: boolean;
-  message?: string;
-} {
-  if (password.length < 8) {
-    return {
-      valid: false,
-      message: 'Password must be at least 8 characters long',
-    };
-  }
-
-  if (!/[A-Z]/.test(password)) {
-    return {
-      valid: false,
-      message: 'Password must contain at least one uppercase letter',
-    };
-  }
-
-  if (!/[a-z]/.test(password)) {
-    return {
-      valid: false,
-      message: 'Password must contain at least one lowercase letter',
-    };
-  }
-
-  if (!/[0-9]/.test(password)) {
-    return {
-      valid: false,
-      message: 'Password must contain at least one number',
-    };
-  }
-
-  return { valid: true };
+export function verifyAuthHeader(authHeader: string | null): JWTPayload | null {
+  const token = extractToken(authHeader);
+  if (!token) return null;
+  
+  return verifyJWT(token);
 }

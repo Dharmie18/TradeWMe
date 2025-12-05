@@ -35,11 +35,11 @@ const nextConfig: NextConfig = {
     config.plugins.push(
       new webpack.NormalModuleReplacementPlugin(
         /node_modules\/viem\/_cjs\/clients\/decorators\/test\.js$/,
-        require.resolve('./webpack-empty-module.js')
+        require.resolve('./webpack-empty-module-cjs.js')
       ),
       new webpack.NormalModuleReplacementPlugin(
         /node_modules\/viem\/_esm\/clients\/decorators\/test\.js$/,
-        require.resolve('./webpack-empty-module.js')
+        require.resolve('./webpack-empty-module-esm.js')
       )
     );
 
@@ -67,16 +67,17 @@ const nextConfig: NextConfig = {
 
     // Fix wagmi's porto connector import issue
     const path = require('path');
-    const emptyModulePath = path.resolve(__dirname, 'webpack-empty-module.js');
+    const emptyModulePathCjs = path.resolve(__dirname, 'webpack-empty-module-cjs.js');
+    const emptyModulePathEsm = path.resolve(__dirname, 'webpack-empty-module-esm.js');
 
     config.resolve.alias = {
       ...config.resolve.alias,
       'porto': false,
       // Replace viem test decorators with empty module
-      'viem/_esm/clients/decorators/test.js': emptyModulePath,
-      'viem/_cjs/clients/decorators/test.js': emptyModulePath,
-      'viem/_esm/clients/decorators/test': emptyModulePath,
-      'viem/_cjs/clients/decorators/test': emptyModulePath,
+      'viem/_esm/clients/decorators/test.js': emptyModulePathEsm,
+      'viem/_cjs/clients/decorators/test.js': emptyModulePathCjs,
+      'viem/_esm/clients/decorators/test': emptyModulePathEsm,
+      'viem/_cjs/clients/decorators/test': emptyModulePathCjs,
     };
 
     // Use IgnorePlugin to completely exclude test directories

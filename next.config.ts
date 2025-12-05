@@ -36,6 +36,10 @@ const nextConfig: NextConfig = {
       new webpack.NormalModuleReplacementPlugin(
         /node_modules\/viem\/_cjs\/clients\/decorators\/test\.js$/,
         require.resolve('./webpack-empty-module.js')
+      ),
+      new webpack.NormalModuleReplacementPlugin(
+        /node_modules\/viem\/_esm\/clients\/decorators\/test\.js$/,
+        require.resolve('./webpack-empty-module.js')
       )
     );
 

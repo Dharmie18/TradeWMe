@@ -37,7 +37,7 @@ export type NetworkType = keyof typeof NETWORKS;
  */
 export function getPublicClient(network: NetworkType) {
   const config = NETWORKS[network];
-  
+
   return createPublicClient({
     chain: config.chain,
     transport: http(config.rpcUrl),
@@ -54,7 +54,7 @@ export async function verifyTransaction(
 ) {
   try {
     const client = getPublicClient(network);
-    
+
     // Get transaction receipt
     const receipt = await client.getTransactionReceipt({
       hash: txHash as `0x${string}`,
@@ -173,7 +173,7 @@ export async function getTokenPriceUsd(symbol: string): Promise<number> {
 
     const response = await fetch(url);
     const data = await response.json();
-    
+
     return data[tokenId]?.usd || 0;
   } catch (error) {
     console.error('Price fetch error:', error);
@@ -190,7 +190,7 @@ export async function calculateUsdValue(
 ): Promise<number> {
   const price = await getTokenPriceUsd(currency);
   const numericAmount = parseFloat(amount);
-  
+
   return numericAmount * price;
 }
 
@@ -214,4 +214,10 @@ export function getExplorerUrl(txHash: string, network: NetworkType): string {
   };
 
   return `${explorers[network]}/tx/${txHash}`;
+}
+
+export const PLATFORM_DEPOSIT_ADDRESS = process.env.NEXT_PUBLIC_PLATFORM_DEPOSIT_ADDRESS || '0x0000000000000000000000000000000000000000';
+
+export function isValidDepositAddress(address: string): boolean {
+  return address.toLowerCase() === PLATFORM_DEPOSIT_ADDRESS.toLowerCase();
 }

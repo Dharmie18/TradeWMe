@@ -8,7 +8,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("TURSO_CONNECTION_URL")
+  url      = "file:./dev.db"
 }
 
 // =============================================================================
@@ -104,7 +104,7 @@ model Wallet {
   lastUsedAt      DateTime @default(now())
   
   // Initial balance is ALWAYS 0 on connect
-  initialBalance  Decimal  @default(0) @db.Decimal(20, 8)
+  initialBalance  Decimal  @default(0)
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -128,10 +128,10 @@ model Deposit {
   txHash          String   @unique
   fromAddress     String
   toAddress       String
-  amount          Decimal  @db.Decimal(20, 8)
+  amount          Decimal
   currency        String   // ETH, BTC, USDT, etc.
   chain           String   // ethereum, bsc, polygon
-  amountUsd       Decimal  @db.Decimal(20, 2)
+  amountUsd       Decimal
   
   status          DepositStatus @default(PENDING)
   confirmations   Int      @default(0)
@@ -175,12 +175,12 @@ model Transaction {
   type        TransactionType
   fromToken   String?
   toToken     String?
-  amountIn    Decimal? @db.Decimal(20, 8)
-  amountOut   Decimal? @db.Decimal(20, 8)
+  amountIn    Decimal?
+  amountOut   Decimal?
   chain       String
   status      String   @default("pending")
   gasUsed     String?
-  gasFee      Decimal? @db.Decimal(20, 8)
+  gasFee      Decimal?
   timestamp   DateTime @default(now())
   createdAt   DateTime @default(now())
 
@@ -206,12 +206,12 @@ model Balance {
   id              String   @id @default(cuid())
   userId          String
   currency        String   // ETH, USDT, etc.
-  balance         Decimal  @default(0) @db.Decimal(20, 8)
-  lockedBalance   Decimal  @default(0) @db.Decimal(20, 8)
-  totalDeposited  Decimal  @default(0) @db.Decimal(20, 8)
-  totalWithdrawn  Decimal  @default(0) @db.Decimal(20, 8)
-  totalProfits    Decimal  @default(0) @db.Decimal(20, 8)
-  balanceUsd      Decimal  @default(0) @db.Decimal(20, 2)
+  balance         Decimal  @default(0)
+  lockedBalance   Decimal  @default(0)
+  totalDeposited  Decimal  @default(0)
+  totalWithdrawn  Decimal  @default(0)
+  totalProfits    Decimal  @default(0)
+  balanceUsd      Decimal  @default(0)
   lastUpdated     DateTime @default(now())
   createdAt       DateTime @default(now())
 
@@ -225,15 +225,15 @@ model ProfitRecord {
   id          String   @id @default(cuid())
   userId      String
   profitType  ProfitType
-  amount      Decimal  @db.Decimal(20, 8)
-  amountUsd   Decimal  @db.Decimal(20, 2)
+  amount      Decimal
+  amountUsd   Decimal
   currency    String
-  rate        Decimal  @db.Decimal(10, 6)
-  baseAmount  Decimal  @db.Decimal(20, 8)
+  rate        Decimal
+  baseAmount  Decimal
   
   // SIMULATION MODE TRACKING
   isSimulated Boolean  @default(false)
-  simulationMultiplier Decimal? @db.Decimal(10, 4)
+  simulationMultiplier Decimal?
   
   calculatedAt DateTime @default(now())
   appliedAt    DateTime?
@@ -265,11 +265,11 @@ enum ProfitStatus {
 model ProfitSettings {
   id                    String   @id @default(cuid())
   userId                String   @unique
-  dailyProfitRate       Decimal  @default(0.02) @db.Decimal(10, 6)
-  tradingProfitRate     Decimal  @default(0.05) @db.Decimal(10, 6)
+  dailyProfitRate       Decimal  @default(0.02)
+  tradingProfitRate     Decimal  @default(0.05)
   compoundingEnabled    Boolean  @default(false)
   autoApplyProfits      Boolean  @default(true)
-  minBalanceForProfits  Decimal  @default(0.01) @db.Decimal(20, 8)
+  minBalanceForProfits  Decimal  @default(0.01)
   lastProfitCalculation DateTime?
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
@@ -287,9 +287,9 @@ model SimulationAdjustment {
   adminId         String
   accountType     AccountType
   adjustmentType  String   // profit_multiplier, balance_adjustment
-  previousValue   Decimal? @db.Decimal(20, 8)
-  newValue        Decimal  @db.Decimal(20, 8)
-  multiplier      Decimal? @db.Decimal(10, 4)
+  previousValue   Decimal?
+  newValue        Decimal
+  multiplier      Decimal?
   reason          String
   isActive        Boolean  @default(true)
   appliedAt       DateTime @default(now())
@@ -335,9 +335,9 @@ model AuditLog {
 model PriceCache {
   id        String   @id @default(cuid())
   symbol    String   @unique // ETH, BTC, SOL
-  priceUsd  Decimal  @db.Decimal(20, 8)
-  change24h Decimal  @db.Decimal(10, 4)
-  volume24h Decimal  @db.Decimal(20, 2)
+  priceUsd  Decimal
+  change24h Decimal
+  volume24h Decimal
   source    String   // coingecko, binance
   updatedAt DateTime @default(now())
   createdAt DateTime @default(now())
@@ -355,7 +355,7 @@ model QRCode {
   userId      String?
   address     String
   chain       String
-  amount      Decimal? @db.Decimal(20, 8)
+  amount      Decimal?
   currency    String?
   uri         String   // ethereum:0x...?value=1000000000000000000
   imageUrl    String?

@@ -3,9 +3,9 @@
 // =============================================================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 
-const prisma = new PrismaClient();
+// Use shared prisma instance
 
 // Popular tokens to fetch
 const DEFAULT_TOKENS = [

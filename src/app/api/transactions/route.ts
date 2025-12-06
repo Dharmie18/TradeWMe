@@ -3,11 +3,9 @@
 // =============================================================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { verifyJWT } from '@/lib/auth-utils';
 import { z } from 'zod';
-
-const prisma = new PrismaClient();
 
 const querySchema = z.object({
   type: z.enum(['DEPOSIT', 'WITHDRAWAL', 'SWAP', 'TRANSFER']).optional(),

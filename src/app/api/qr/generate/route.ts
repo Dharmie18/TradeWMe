@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import QRCode from 'qrcode';
 import { createHmac } from 'crypto';
 import { verifyJWT } from '@/lib/auth-utils';
 import { z } from 'zod';
 
-const prisma = new PrismaClient();
+// Use shared prisma instance
 
 const qrSchema = z.object({
   address: z.string().regex(/^0x[a-fA-F0-9]{40}$/),

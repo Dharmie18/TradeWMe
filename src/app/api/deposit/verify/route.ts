@@ -3,7 +3,7 @@
 // =============================================================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { verifyJWT } from '@/lib/auth-utils';
 import {
@@ -16,7 +16,7 @@ import {
   type NetworkType,
 } from '@/lib/blockchain';
 
-const prisma = new PrismaClient();
+// Use shared prisma instance
 
 const depositSchema = z.object({
   txHash: z.string().regex(/^0x[a-fA-F0-9]{64}$/, 'Invalid transaction hash'),

@@ -3,11 +3,9 @@
 // =============================================================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { verifyJWT } from '@/lib/auth-utils';
 import { z } from 'zod';
-
-const prisma = new PrismaClient();
 
 const simulationSchema = z.object({
   userId: z.string(),

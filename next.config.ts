@@ -43,6 +43,18 @@ const nextConfig: NextConfig = {
       )
     );
 
+    // AGGRESSIVE: Ignore all markdown, license, and documentation files
+    config.module.rules.push({
+      test: /\.(md|txt|license|LICENSE|readme|README|changelog|CHANGELOG|history|HISTORY)$/i,
+      use: 'null-loader',
+    });
+
+    // AGGRESSIVE: Ignore all documentation files in node_modules
+    config.module.rules.push({
+      test: /node_modules\/.*\/(README|LICENSE|CHANGELOG|HISTORY|CONTRIBUTING|CODE_OF_CONDUCT|SECURITY)\.(md|txt|rst)?$/i,
+      use: 'null-loader',
+    });
+
     // Ignore all test files
     config.module.rules.push({
       test: /\.test\.(js|ts|tsx)$/,
@@ -109,6 +121,14 @@ const nextConfig: NextConfig = {
       new webpack.IgnorePlugin({
         resourceRegExp: /\/test\//,
         contextRegExp: /viem\/_esm\/actions/,
+      })
+    );
+
+    // AGGRESSIVE: Ignore problematic @libsql dynamic imports
+    config.plugins.push(
+      new webpack.IgnorePlugin({
+        resourceRegExp: /\.(md|txt|license|LICENSE|readme|README)$/i,
+        contextRegExp: /@libsql/,
       })
     );
 

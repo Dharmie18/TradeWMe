@@ -3,10 +3,8 @@
 // =============================================================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { verifyJWT } from '@/lib/auth-utils';
-
-const prisma = new PrismaClient();
 
 function isAdmin(role: string): boolean {
   return role === 'ADMIN' || role === 'SUPER_ADMIN';

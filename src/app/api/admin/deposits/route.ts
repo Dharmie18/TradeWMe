@@ -3,11 +3,11 @@
 // =============================================================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { verifyJWT } from '@/lib/auth-utils';
 import { z } from 'zod';
 
-const prisma = new PrismaClient();
+// Use shared prisma instance
 
 function isAdmin(role: string): boolean {
   return role === 'ADMIN' || role === 'SUPER_ADMIN';

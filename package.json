@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "npx prisma generate && next build",
+    "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@babel/parser": "^7.28.5",
@@ -19,6 +20,7 @@
     "@libsql/client": "^0.15.15",
     "@metamask/sdk": "^0.34.0",
     "@number-flow/react": "^0.5.10",
+    "@prisma/adapter-libsql": "^7.1.0",
     "@prisma/client": "^7.1.0",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
@@ -112,7 +114,7 @@
     "vaul": "^1.1.2",
     "viem": "2.x",
     "wagmi": "^3.0.1",
-    "zod": "^4.1.12"
+    "zod": "^4.1.13"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",

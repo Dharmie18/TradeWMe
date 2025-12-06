@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { verifyJWT } from '@/lib/auth-utils';
-
-const prisma = new PrismaClient();
 
 /**
  * Calculate profit for user based on their settings

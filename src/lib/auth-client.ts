@@ -37,7 +37,7 @@ export function useSession() {
             return;
          }
 
-         const response = await fetch('/api/auth/mock-verify-token', {
+         const response = await fetch('/api/auth/hybrid-verify-token', {
             method: 'POST',
             headers: {
                'Content-Type': 'application/json',

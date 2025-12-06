@@ -19,13 +19,21 @@ export default function Home() {
       <LivePriceTicker />
       
       <main className="flex-1">
-        {/* Hero Section with Animated Background */}
+        {/* Hero Section with Enhanced Animated Background */}
         <section className="w-full py-12 md:py-20 lg:py-32 relative overflow-hidden">
-          {/* Animated Background */}
+          {/* Enhanced Animated Background */}
           <div className="absolute inset-0 -z-10">
-            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse" />
-            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
+            {/* Primary gradient blobs */}
+            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-500/30 to-cyan-500/20 rounded-full blur-3xl animate-blob" />
+            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-r from-cyan-500/25 to-blue-400/30 rounded-full blur-3xl animate-blob animation-delay-2000" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-blue-400/15 to-cyan-400/25 rounded-full blur-3xl animate-blob animation-delay-4000" />
+            
+            {/* Additional floating elements */}
+            <div className="absolute top-10 right-10 w-32 h-32 bg-blue-300/20 rounded-full blur-2xl animate-float" />
+            <div className="absolute bottom-10 left-10 w-24 h-24 bg-cyan-300/25 rounded-full blur-xl animate-float" style={{ animationDelay: '1s' }} />
+            
+            {/* Gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-transparent to-cyan-50/30" />
           </div>
           
           <div className="container mx-auto px-4 md:px-6">

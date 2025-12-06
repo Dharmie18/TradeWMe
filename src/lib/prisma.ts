@@ -1,63 +1,39 @@
 import { PrismaClient } from '@prisma/client';
+import { createClient } from '@libsql/client';
+import { PrismaLibSQL } from '@prisma/adapter-libsql';
 
 // Use singleton pattern for better performance
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
-// For build process, use a simple mock that doesn't actually connect
-const createMockPrisma = () => {
-  const mockMethods = {
-    findMany: () => Promise.resolve([]),
-    findUnique: () => Promise.resolve(null),
-    findFirst: () => Promise.resolve(null),
-    create: () => Promise.resolve({}),
-    update: () => Promise.resolve({}),
-    delete: () => Promise.resolve({}),
-    count: () => Promise.resolve(0),
-    groupBy: () => Promise.resolve([]),
-    aggregate: () => Promise.resolve({}),
-    upsert: () => Promise.resolve({}),
-    createMany: () => Promise.resolve({ count: 0 }),
-    updateMany: () => Promise.resolve({ count: 0 }),
-    deleteMany: () => Promise.resolve({ count: 0 }),
-  };
-
-  return {
-    user: mockMethods,
-    emailVerificationToken: mockMethods,
-    session: mockMethods,
-    wallet: mockMethods,
-    deposit: mockMethods,
-    transaction: mockMethods,
-    balance: mockMethods,
-    profitRecord: mockMethods,
-    profitSettings: mockMethods,
-    simulationAdjustment: mockMethods,
-    auditLog: mockMethods,
-    priceCache: mockMethods,
-    qRCode: mockMethods,
-    $connect: () => Promise.resolve(),
-    $disconnect: () => Promise.resolve(),
-    $transaction: (fn: any) => fn(mockMethods),
-  } as any;
-};
-
-export const prisma = globalForPrisma.prisma || (() => {
-  // During build, use mock
-  if (process.env.NODE_ENV === 'production' && !process.env.VERCEL) {
-    return createMockPrisma();
-  }
-  
-  // During development or on Vercel, use real client
+function createPrismaClient() {
   try {
-    const client = new PrismaClient({
-      log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-    });
-    globalForPrisma.prisma = client;
-    return client;
+    // Try to use Turso if connection URL is available
+    if (process.env.TURSO_CONNECTION_URL && process.env.TURSO_AUTH_TOKEN) {
+      console.log('Connecting to Turso database...');
+      const libsql = createClient({
+        url: process.env.TURSO_CONNECTION_URL,
+        authToken: process.env.TURSO_AUTH_TOKEN,
+      });
+      
+      const adapter = new PrismaLibSQL(libsql);
+      
+      return new PrismaClient({ 
+        adapter,
+        log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+      });
+    } else {
+      // Fallback to regular SQLite for development
+      console.log('Using local SQLite database...');
+      return new PrismaClient({
+        log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+      });
+    }
   } catch (error) {
-    console.warn('Failed to create Prisma client, using mock:', error);
-    return createMockPrisma();
+    console.error('Failed to create Prisma client:', error);
+    throw error;
   }
-})();
+}
+
+export const prisma = globalForPrisma.prisma || createPrismaClient();
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;

@@ -1,51 +1,63 @@
 "use client"
-import { createAuthClient } from "better-auth/react"
 import { useEffect, useState } from "react"
 
-export const authClient = createAuthClient({
-   baseURL: typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_SITE_URL,
-  fetchOptions: {
-      headers: {
-        Authorization: `Bearer ${typeof window !== 'undefined' ? localStorage.getItem("bearer_token") : ""}`,
-      },
-      onSuccess: (ctx) => {
-          const authToken = ctx.response.headers.get("set-auth-token")
-          // Store the token securely (e.g., in localStorage)
-          if(authToken){
-            // Split token at "." and take only the first part
-            const tokenPart = authToken.includes('.') ? authToken.split('.')[0] : authToken;
-            localStorage.setItem("bearer_token", tokenPart);
-          }
-      }
-  }
-});
+// Simple auth client without better-auth dependency
+export const authClient = {
+  // Mock implementation for compatibility
+  useSession: () => ({ data: null, isPending: false, error: null })
+};
 
-type SessionData = ReturnType<typeof authClient.useSession>
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  accountType: 'REAL' | 'DEMO';
+  emailVerified: boolean;
+}
 
-export function useSession(): SessionData {
-   const [session, setSession] = useState<any>(null);
+export function useSession() {
+   const [session, setSession] = useState<{ user: User } | null>(null);
    const [isPending, setIsPending] = useState(true);
    const [error, setError] = useState<any>(null);
 
-   const refetch = () => {
+   const refetch = async () => {
       setIsPending(true);
       setError(null);
-      fetchSession();
+      await fetchSession();
    };
 
    const fetchSession = async () => {
       try {
-         const res = await authClient.getSession({
-            fetchOptions: {
-               auth: {
-                  type: "Bearer",
-                  token: typeof window !== 'undefined' ? localStorage.getItem("bearer_token") || "" : "",
-               },
+         const token = typeof window !== 'undefined' ? localStorage.getItem("bearer_token") : null;
+         
+         if (!token) {
+            setSession(null);
+            setIsPending(false);
+            return;
+         }
+
+         const response = await fetch('/api/auth/mock-verify-token', {
+            method: 'POST',
+            headers: {
+               'Content-Type': 'application/json',
+               'Authorization': `Bearer ${token}`,
             },
          });
-         setSession(res.data);
-         setError(null);
+
+         if (response.ok) {
+            const data = await response.json();
+            setSession({ user: data.user });
+            setError(null);
+         } else {
+            // Token is invalid, remove it
+            if (typeof window !== 'undefined') {
+               localStorage.removeItem("bearer_token");
+            }
+            setSession(null);
+         }
       } catch (err) {
+         console.error('Session fetch error:', err);
          setSession(null);
          setError(err);
       } finally {

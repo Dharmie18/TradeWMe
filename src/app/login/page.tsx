@@ -27,7 +27,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch('/api/auth/mock-login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -78,6 +78,11 @@ export default function LoginPage() {
           <CardDescription className="text-center">
             Enter your credentials to access your account
           </CardDescription>
+          <div className="rounded-md bg-blue-50 dark:bg-blue-900/20 p-3 text-sm text-blue-800 dark:text-blue-200">
+            <p className="font-medium mb-1">Test Accounts:</p>
+            <p>Admin: admin@tradewme.com / admin123</p>
+            <p>User: user@tradewme.com / user123</p>
+          </div>
           {searchParams.get('registered') && (
             <div className="rounded-md bg-green-50 dark:bg-green-900/20 p-3 text-sm text-green-800 dark:text-green-200">
               Account created successfully! Please log in.

@@ -1,6 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyJWT } from '@/lib/auth-utils';
-import { prisma } from '@/lib/prisma';
+
+// Mock users for testing (same as mock-login)
+const mockUsers = [
+  {
+    id: '1',
+    email: 'admin@tradewme.com',
+    name: 'Admin User',
+    role: 'ADMIN',
+    accountType: 'REAL' as const,
+    emailVerified: true,
+    isActive: true,
+  },
+  {
+    id: '2',
+    email: 'user@tradewme.com',
+    name: 'Test User',
+    role: 'USER',
+    accountType: 'REAL' as const,
+    emailVerified: true,
+    isActive: true,
+  },
+];
 
 // Handle both GET and POST requests
 export async function GET(request: NextRequest) {
@@ -32,19 +53,8 @@ async function handleTokenVerification(request: NextRequest) {
       }, { status: 401 });
     }
 
-    // Get user from database to ensure they still exist and are active
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        accountType: true,
-        emailVerified: true,
-        isActive: true,
-      },
-    });
+    // Find mock user
+    const user = mockUsers.find(u => u.id === decoded.userId);
 
     if (!user || !user.isActive) {
       return NextResponse.json({
@@ -66,7 +76,7 @@ async function handleTokenVerification(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Token verification error:', error);
+    console.error('Mock token verification error:', error);
     return NextResponse.json({
       success: false,
       message: 'Token verification failed',

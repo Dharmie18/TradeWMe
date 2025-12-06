@@ -37,24 +37,34 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const { error } = await authClient.signUp.email({
-        email: formData.email,
-        name: formData.name,
-        password: formData.password,
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          name: formData.name,
+          password: formData.password,
+        }),
       });
 
-      if (error?.code) {
-        const errorMessages: Record<string, string> = {
-          USER_ALREADY_EXISTS: 'Email already registered',
-        };
-        toast.error(errorMessages[error.code] || 'Registration failed');
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (data.error === 'USER_ALREADY_EXISTS') {
+          toast.error('Email already registered. Please use a different email or try logging in.');
+        } else {
+          toast.error(data.message || 'Registration failed. Please try again.');
+        }
         setIsLoading(false);
         return;
       }
 
-      toast.success('Account created successfully!');
+      toast.success('Account created successfully! Please check your email to verify your account.');
       router.push('/login?registered=true');
     } catch (error) {
+      console.error('Registration error:', error);
       toast.error('Registration failed. Please try again.');
       setIsLoading(false);
     }

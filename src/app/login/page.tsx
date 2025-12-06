@@ -27,23 +27,39 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const { data, error } = await authClient.signIn.email({
-        email: formData.email,
-        password: formData.password,
-        rememberMe: formData.rememberMe,
-        callbackURL: searchParams.get('redirect') || '/dashboard',
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
       });
 
-      if (error?.code) {
-        toast.error('Invalid email or password. Please make sure you have already registered an account and try again.');
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (data.error === 'EMAIL_NOT_VERIFIED') {
+          toast.error('Please verify your email before logging in. Check your inbox for the verification link.');
+        } else {
+          toast.error(data.message || 'Invalid email or password. Please try again.');
+        }
         setIsLoading(false);
         return;
+      }
+
+      // Store the JWT token
+      if (data.token) {
+        localStorage.setItem('bearer_token', data.token);
       }
 
       toast.success('Successfully logged in!');
       const redirectUrl = searchParams.get('redirect') || '/dashboard';
       router.push(redirectUrl);
     } catch (error) {
+      console.error('Login error:', error);
       toast.error('Login failed. Please try again.');
       setIsLoading(false);
     }

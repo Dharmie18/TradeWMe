@@ -1,8 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useSession } from '@/lib/auth-client';
+import { useRequireAuth } from '@/lib/auth-check';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { ProfileCard } from '@/components/dashboard/ProfileCard';
@@ -12,19 +10,9 @@ import { PersonalStats } from '@/components/dashboard/PersonalStats';
 import { Loader2 } from 'lucide-react';
 
 export default function DashboardPage() {
-  const { data: session, isPending } = useSession();
-  const router = useRouter();
+  const { user, isLoading, isAuthenticated } = useRequireAuth('/login');
 
-  useEffect(() => {
-    if (!isPending && !session?.user) {
-      console.log('No session found, redirecting to login');
-      router.push('/login?redirect=/dashboard');
-    } else if (session?.user) {
-      console.log('Session found:', session.user);
-    }
-  }, [session, isPending, router]);
-
-  if (isPending) {
+  if (isLoading) {
     return (
       <div className="flex min-h-screen flex-col">
         <Header />
@@ -36,8 +24,8 @@ export default function DashboardPage() {
     );
   }
 
-  if (!session?.user) {
-    return null;
+  if (!isAuthenticated || !user) {
+    return null; // Will redirect to login
   }
 
   return (
@@ -48,7 +36,7 @@ export default function DashboardPage() {
           {/* Welcome Section */}
           <div className="mb-8">
             <h1 className="text-3xl md:text-4xl font-bold">
-              Welcome back, {session.user.name}!
+              Welcome back, {user.name || 'User'}!
             </h1>
             <p className="text-muted-foreground mt-2">
               Here's what's happening with your trading account

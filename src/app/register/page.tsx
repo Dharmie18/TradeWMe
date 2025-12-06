@@ -37,7 +37,7 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/vercel-signup', {
+      const response = await fetch('/api/auth/simple-signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

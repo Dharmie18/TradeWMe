@@ -37,7 +37,7 @@ export function useSession() {
             return;
          }
 
-         const response = await fetch('/api/auth/vercel-verify-token', {
+         const response = await fetch('/api/auth/simple-verify', {
             method: 'POST',
             headers: {
                'Content-Type': 'application/json',

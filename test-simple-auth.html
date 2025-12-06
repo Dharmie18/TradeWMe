@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Auth Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .test-accounts {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Simple Authentication Test</h1>
+        
+        <div class="test-accounts">
+            <h3>Test Accounts (Always Available):</h3>
+            <p><strong>Admin:</strong> admin@tradewme.com / admin123</p>
+            <p><strong>User:</strong> user@tradewme.com / user123</p>
+        </div>
+
+        <h3>Test Login</h3>
+        <div class="form-group">
+            <label for="loginEmail">Email:</label>
+            <input type="email" id="loginEmail" value="admin@tradewme.com">
+        </div>
+        
+        <div class="form-group">
+            <label for="loginPassword">Password:</label>
+            <input type="password" id="loginPassword" value="admin123">
+        </div>
+        
+        <button onclick="testLogin()">Test Login</button>
+        <button onclick="testInvalidLogin()">Test Invalid Password</button>
+
+        <div id="loginResult" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="container">
+        <h3>Test Registration</h3>
+        <div class="form-group">
+            <label for="signupName">Name:</label>
+            <input type="text" id="signupName" value="Test User">
+        </div>
+        
+        <div class="form-group">
+            <label for="signupEmail">Email:</label>
+            <input type="email" id="signupEmail" value="test@example.com">
+        </div>
+        
+        <div class="form-group">
+            <label for="signupPassword">Password:</label>
+            <input type="password" id="signupPassword" value="password123">
+        </div>
+        
+        <button onclick="testSignup()">Test Signup</button>
+        <button onclick="testLoginWithNewAccount()">Login with New Account</button>
+
+        <div id="signupResult" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        async function testLogin() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const resultDiv = document.getElementById('loginResult');
+            
+            try {
+                console.log('Testing login with:', email, password);
+                
+                const response = await fetch('/api/auth/simple-login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                });
+                
+                const data = await response.json();
+                
+                resultDiv.style.display = 'block';
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ LOGIN SUCCESS!\n\nUser: ${data.user.name}\nEmail: ${data.user.email}\nRole: ${data.user.role}\nToken: ${data.token.substring(0, 50)}...\n\nAuthentication is working!`;
+                    
+                    // Store token
+                    localStorage.setItem('bearer_token', data.token);
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ LOGIN FAILED\n\nMessage: ${data.message}`;
+                }
+            } catch (error) {
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ CONNECTION ERROR\n\nError: ${error.message}`;
+            }
+        }
+
+        async function testInvalidLogin() {
+            const email = document.getElementById('loginEmail').value;
+            const password = 'wrongpassword';
+            const resultDiv = document.getElementById('loginResult');
+            
+            try {
+                const response = await fetch('/api/auth/simple-login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                });
+                
+                const data = await response.json();
+                
+                resultDiv.style.display = 'block';
+                if (!data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ INVALID PASSWORD TEST PASSED!\n\nCorrectly rejected wrong password.\nMessage: ${data.message}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ INVALID PASSWORD TEST FAILED\n\nShould have rejected wrong password!`;
+                }
+            } catch (error) {
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ CONNECTION ERROR\n\nError: ${error.message}`;
+            }
+        }
+
+        async function testSignup() {
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const resultDiv = document.getElementById('signupResult');
+            
+            try {
+                const response = await fetch('/api/auth/simple-signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name, email, password }),
+                });
+                
+                const data = await response.json();
+                
+                resultDiv.style.display = 'block';
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ SIGNUP SUCCESS!\n\nAccount created for: ${email}\nMessage: ${data.message}\n\nNow try logging in with these credentials!`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ SIGNUP FAILED\n\nMessage: ${data.message}`;
+                }
+            } catch (error) {
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ CONNECTION ERROR\n\nError: ${error.message}`;
+            }
+        }
+
+        async function testLoginWithNewAccount() {
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const resultDiv = document.getElementById('signupResult');
+            
+            try {
+                const response = await fetch('/api/auth/simple-login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                });
+                
+                const data = await response.json();
+                
+                resultDiv.style.display = 'block';
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ NEW ACCOUNT LOGIN SUCCESS!\n\nLogged in with newly created account!\nUser: ${data.user.name}\nEmail: ${data.user.email}\n\nFull authentication flow is working!`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ NEW ACCOUNT LOGIN FAILED\n\nMessage: ${data.message}\n\nMake sure you created the account first!`;
+                }
+            } catch (error) {
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ CONNECTION ERROR\n\nError: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

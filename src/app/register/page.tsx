@@ -61,7 +61,13 @@ export default function RegisterPage() {
         return;
       }
 
-      toast.success('Account created successfully! Please check your email to verify your account.');
+      if (data.verificationUrl) {
+        toast.success('Account created successfully! You can now log in immediately.');
+        // Show verification URL for manual verification if needed
+        console.log('Manual verification URL:', data.verificationUrl);
+      } else {
+        toast.success('Account created successfully! You can now log in.');
+      }
       router.push('/login?registered=true');
     } catch (error) {
       console.error('Registration error:', error);

@@ -42,13 +42,14 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Create user
+    // Create user with auto-verification for now (until email service is set up)
     const user = await prisma.user.create({
       data: {
         email: email.toLowerCase(),
         password: hashedPassword,
         name,
-        emailVerified: false,
+        emailVerified: true, // Auto-verify for now
+        emailVerifiedAt: new Date(),
         accountType: 'REAL', // Default to REAL account
       },
     });
@@ -87,10 +88,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Account created! Please check your email to verify your account.',
+      message: 'Account created successfully! You can now log in.',
       userId: user.id,
-      verificationEmailSent: true,
-      // TODO: Remove in production
+      emailVerified: true,
+      // Keep verification URL for manual verification if needed
       verificationUrl,
     });
 

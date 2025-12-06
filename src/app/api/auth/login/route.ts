@@ -29,11 +29,14 @@ export async function POST(request: NextRequest) {
       where: { email: email.toLowerCase() },
     });
 
+    console.log('Login attempt for:', email.toLowerCase());
+    console.log('User found:', user ? 'Yes' : 'No');
+
     if (!user) {
       return NextResponse.json({
         success: false,
-        message: 'Invalid email or password',
-        error: 'INVALID_CREDENTIALS',
+        message: 'No account found with this email. Please check your email or create a new account.',
+        error: 'USER_NOT_FOUND',
       }, { status: 401 });
     }
 
@@ -49,11 +52,13 @@ export async function POST(request: NextRequest) {
 
     // Verify password
     const isValidPassword = await bcrypt.compare(password, user.password);
+    console.log('Password valid:', isValidPassword);
+    
     if (!isValidPassword) {
       return NextResponse.json({
         success: false,
-        message: 'Invalid email or password',
-        error: 'INVALID_CREDENTIALS',
+        message: 'Incorrect password. Please check your password and try again.',
+        error: 'INVALID_PASSWORD',
       }, { status: 401 });
     }
 
